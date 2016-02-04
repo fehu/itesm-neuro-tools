@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 --
--- Module      :  ImgCharacteristics.CV
+-- Module      :  ImgCharacteristics.Friday
 -- Copyright   :
 -- License     :  MIT
 --
@@ -10,43 +10,50 @@
 --
 -- |
 --
+-----------------------------------------------------------------------------
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE FlexibleContexts #-}
 
-module ImgCharacteristics.CV (
+module ImgCharacteristics.Friday (
 
 ) where
 
 import ImgCharacteristics
 
-import CV.Image
+import Vision.Image
+import Vision.Primitive
+import Vision.Primitive.Shape ( (:.)(..), Z(..) )
+import Vision.Image.Transform ( crop )
+import qualified Vision.Histogram as H
 
---import System.IO.Unsafe
-
+import Foreign.Storable (Storable)
 
 -----------------------------------------------------------------------------
 
-fixedColRowRegions :: FixedColRowRegions -> ForeachRegion (Image c d) -- img -> (img -> a) -> [a]
+type Img p = Manifest p
+--
+
+fixedColRowRegions :: (Storable (ImagePixel p), Storable p) =>
+                      FixedColRowRegions
+                   -> ForeachRegion (Img p)
 fixedColRowRegions rd img f =
     do row <- [1..nRow]
        col <- [1..nCol]
 
-       undefined
---       unsafePerformIO $ withIOROI ((col-1)*x, (row-1)*y)
---                                   (col*x, row*y)
-
+       let region = Rect ((col-1)*x) ((row-1)*y) x y
+       let img' = crop region img
+       return $ f img'
 
     where ((x, y), nRow, nCol) = finalSize rd img
---          mimg = Mutable img
 
-finalSize :: FixedColRowRegions -> Image c d -> ((Int, Int), Int, Int)
+finalSize :: FixedColRowRegions -> Img p -> ((Int, Int), Int, Int)
 finalSize (FixedColRowRegions rRow rCol rMin) img
     | rRow == 0 ||
       rCol == 0     = ((0, 0), 0, 0)
     | (x, y) > rMin = ((x, y), rRow, rCol)
     | otherwise     = finalSize (FixedColRowRegions nRow nCol rMin) img
 
-    where (width, height) = getSize img
+    where Z :. height :. width = manifestSize img
           x = width `quot` rCol
           y = height `quot` rRow
 
@@ -57,6 +64,12 @@ finalSize (FixedColRowRegions rRow rCol rMin) img
 -----------------------------------------------------------------------------
  -- -- -- -- -- -- -- -- -- -- Characteristics -- -- -- -- -- -- -- -- -- --
         -------------------------------------------------------------
+
+
+--histogram img = H.histogram Nothing img
+
+
+
 
 
 

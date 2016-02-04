@@ -11,11 +11,13 @@
 -- |
 --
 
-{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE ExistentialQuantification, FlexibleInstances #-}
 
 module ImgCharacteristics (
 
-  CharacteristicsExtractor(..)
+  CharacteristicExtractor(..)
+, CharacteristicsExtractor(..)
+, addCharacteristic
 
 , RegionsExtractor(..)
 , ForeachRegion
@@ -29,10 +31,16 @@ import Nat.Vec
 
 -----------------------------------------------------------------------------
 
-data (Num n) => CharacteristicsExtractor img n = CharacteristicsExtractor {
-                                                    characteristic     :: img -> n
-                                                  , characteristicName :: String
-                                                }
+
+data (Num n) => CharacteristicExtractor img n = CharacteristicExtractor (img -> n) String
+
+data (Num n) => CharacteristicsExtractor img n l = CharacteristicsExtractor {
+                                                    characteristics      :: img -> Vec l n
+                                                  , characteristicsNames :: Vec l String
+                                                 }
+
+addCharacteristic (CharacteristicsExtractor es ns) (CharacteristicExtractor e n) =
+    CharacteristicsExtractor (\i -> e i +: es i) (n +: ns)
 
 
 -----------------------------------------------------------------------------
@@ -49,11 +57,11 @@ data FixedColRowRegions = FixedColRowRegions { rRow          :: Int
 -----------------------------------------------------------------------------
 
 imageCharacteristics :: (Num n, RegionsExtractor img) =>
-                        Vec l (CharacteristicsExtractor img n)
+                        CharacteristicsExtractor img n l
                      -> img
                      -> [Vec l n]
-imageCharacteristics ces img = foreachRegion img
-                             $ \i -> fmap (`characteristic` i) ces
+imageCharacteristics ce img = foreachRegion img
+                            $ \i -> characteristics ce i
 
 
 -----------------------------------------------------------------------------
