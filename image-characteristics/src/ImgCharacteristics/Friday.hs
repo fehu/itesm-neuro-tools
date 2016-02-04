@@ -16,9 +16,19 @@
 
 module ImgCharacteristics.Friday (
 
+  Img
+, fixedColRowRegions
+
+
+  -- for tests
+, imgSizeCharacteristic
+
+
 ) where
 
 import ImgCharacteristics
+
+import Nat.Vec
 
 import Vision.Image
 import Vision.Primitive
@@ -65,6 +75,12 @@ finalSize (FixedColRowRegions rRow rCol rMin) img
  -- -- -- -- -- -- -- -- -- -- Characteristics -- -- -- -- -- -- -- -- -- --
         -------------------------------------------------------------
 
+-- for tests
+imgSizeCharacteristic :: (Image img) => CharacteristicsExtractor img Int N2
+imgSizeCharacteristic = CharacteristicsExtractor f names
+    where f img = let Z :. h :. w = shape img
+                in h +: w +: VNil
+          names = "image height" +: "image width" +: VNil
 
 --histogram img = H.histogram Nothing img
 
