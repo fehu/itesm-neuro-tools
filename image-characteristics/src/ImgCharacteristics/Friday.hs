@@ -43,9 +43,7 @@ import Foreign.Storable (Storable)
 type Img p = Manifest p
 --
 
-fixedColRowRegions :: (Storable (ImagePixel p), Storable p) =>
-                      FixedColRowRegions
-                   -> ForeachRegion (Img p)
+fixedColRowRegions :: (Storable p) => FixedColRowRegions -> ForeachRegion (Img p)
 fixedColRowRegions rd img f =
     do row <- [1..nRow]
        col <- [1..nCol]
@@ -59,15 +57,15 @@ fixedColRowRegions rd img f =
 finalSize :: FixedColRowRegions -> Img p -> ((Int, Int), Int, Int)
 finalSize (FixedColRowRegions rRow rCol rMin) img
     | rRow == 0 ||
-      rCol == 0     = ((0, 0), 0, 0)
-    | (x, y) > rMin = ((x, y), rRow, rCol)
-    | otherwise     = finalSize (FixedColRowRegions nRow nCol rMin) img
+      rCol == 0      = ((0, 0), 0, 0)
+    | (x, y) >= rMin = ((x, y), rRow, rCol)
+    | otherwise      = finalSize (FixedColRowRegions nRow nCol rMin) img
 
     where Z :. height :. width = manifestSize img
           x = width `quot` rCol
           y = height `quot` rRow
 
-          nRow = if x < fst rMin then rRow - 1 else rRow
+          nRow = if y < fst rMin then rRow - 1 else rRow
           nCol = if x < snd rMin then rCol - 1 else rCol
 
 
@@ -83,11 +81,4 @@ imgSizeCharacteristic = CharacteristicsExtractor f names
           names = "image height" +: "image width" +: VNil
 
 --histogram img = H.histogram Nothing img
-
-
-
-
-
-
-
 
