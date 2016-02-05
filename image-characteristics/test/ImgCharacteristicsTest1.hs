@@ -11,14 +11,16 @@
 -- |
 --
 
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+--{-# OPTIONS_GHC -fcontext-stack=400 #-}
+
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, TypeOperators #-}
 
 module Main where
 
 import Nat.Vec
 
 import ImgCharacteristics
-import ImgCharacteristics.Friday
+import ImgCharacteristics.Friday as Fr
 
 import Vision.Image hiding (map)
 import Vision.Image.JuicyPixels (toFridayRGB)
@@ -26,22 +28,38 @@ import Vision.Image.RGB.Type
 import Codec.Picture
 
 import System.Environment
+import System.Exit
+import Control.Monad (forM_)
 
 -----------------------------------------------------------------------------
 
 main = getArgs >>= parseArgs
 
-fixedRegions = FixedColRowRegions 5 5 (200, 200)
+fixedRegions = FixedColRowRegions{ rRow = 5
+                                 , rCol = 5
+                                 , minRegionSize = (200, 200)
+                                 }           -- (height, width)
+
 
 instance RegionsExtractor RGB where foreachRegion = fixedColRowRegions fixedRegions
 
-parseArgs [imgPath] = do putStrLn $ "Processing " ++ imgPath
+parseArgs [imgPath] = do putStrLn $ "Processing " ++ imgPath ++ " ...\n"
                          Right img' <- readImage imgPath
                          let img = toFridayRGB $ convertRGB8 img'
 
-                         let ce = imgSizeCharacteristic
-                         let cs = imageCharacteristics ce img
+--                         let ce = imgSizeCharacteristic
+--                         let hist :: CharacteristicsExtractor RGB Double (N4 :^: N3)
+--                             hist = histogram3 "RGB 3D histogram:" nat4
+                         let mean = Fr.mean (genVecFrom nat3 $ map (:[]) "RGB")
+                         let -- ce = hist `addCharacteristics` mean
+                             ce = mean
+                             cs = imageCharacteristics ce img
 
-                         putStrLn "Characteristics Vector:"
-                         putStrLn . show $ map (map show . vec2list) cs
+                         putStrLn "Characteristics:"
+                         forM_ (vec2list $ characteristicsNames ce) $ putStrLn . ("\t" ++ )
+                         putStrLn "Characteristic Vectors:"
+                         forM_ cs $ print . vec2list
 
+
+
+parseArgs args = putStrLn ("wrong arguments: " ++ show args) >> exitFailure

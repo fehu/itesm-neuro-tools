@@ -21,6 +21,7 @@ cabal-version:       >=1.10
 library
   exposed-modules:     ImgCharacteristics
                        ImgCharacteristics.Friday
+                       ImgCharacteristics.Friday.Utils
 
   -- other-modules:
 
@@ -30,6 +31,7 @@ library
                      , friday-juicypixels == 0.1.1
                      , friday == 0.2.2.0
                      , Nat >= 0.1.1
+                     , vector >= 0.11
   hs-source-dirs:      src
 
   default-extensions:  Rank2Types
