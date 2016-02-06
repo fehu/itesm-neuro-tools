@@ -26,10 +26,10 @@ module ImgCharacteristics.Friday (
 --, histogram3
 
 , ImgCharacteristics.Friday.mean
+, descriptiveStats
 
   -- for tests
 , imgSizeCharacteristic
-
 
 ) where
 
@@ -48,7 +48,6 @@ import qualified Data.Vector.Storable as V
 import Foreign.Storable (Storable)
 import Data.Int
 import System.IO.Unsafe
---import Data.Word
 
 -----------------------------------------------------------------------------
 
@@ -131,26 +130,90 @@ histogram3 name _ = let h s i = H.histogram s i :: H.Histogram DIM3 Int32
 
 -----------------------------------------------------------------------------
 
-mean :: ( Fractional num
---        , Show num -- TODO: temp
+chNames opName = fmap ((opName ++ " ") ++)
+
+chanelCharacteristicsExtractor' mkRes opName f chanelNames = (mkRes . f, chNames opName chanelNames)
+
+type ChanelCharacteristicsExtractor' dep res n num1 num2 =
+        (Integral num1, Floating num2, GenVec n) =>
+    Vec n String -> (dep -> [Vec n num1] -> res n num2, Vec n String)
+
+square a = a * a
+
+vecsSum :: (Num num, GenVec n) => [Vec n num] -> Vec n num
+vecsSum = foldr (vecCombine (+)) (genVec (const 0) undefined)
+
+vecsNormalizedSum pixels = (/ len) <$> vecsSum pixels
+    where len = fromIntegral $ length pixels
+
+newtype Mean n num = Mean (Vec n num)
+newtype Variance n num = Variance (Vec n num)
+newtype StandardDeviation n num = StandardDeviation (Vec n num)
+
+class AsVec a where asVec :: a n num -> Vec n num
+
+instance AsVec Mean where asVec (Mean x) = x
+instance AsVec Variance where asVec (Variance x) = x
+instance AsVec StandardDeviation where asVec (StandardDeviation x) = x
+
+mean' :: (Integral num1, Floating num2, GenVec n) =>
+    Vec n String -> ([Vec n num1] -> Mean n num2, Vec n String)
+mean' = chanelCharacteristicsExtractor' Mean "mean"
+      $ vecsNormalizedSum . map (fmap fromIntegral)
+
+
+var' :: ChanelCharacteristicsExtractor' (Mean n num2) Variance n num1 num2
+var' names = (f, chNames "variance" names)
+    where f (Mean mean) pixels = Variance $ vecsNormalizedSum mmsq
+                where mmsq = map ( fmap square
+                                 . flip (vecCombine (-)) mean
+                                 . fmap fromIntegral
+                                 )
+                                 pixels
+
+
+stdev' :: ChanelCharacteristicsExtractor' (Variance n num2) StandardDeviation n num1 num2
+stdev' names = (f, chNames "stdev" names)
+    where f (Variance var) _ = StandardDeviation $ fmap sqrt var
+
+
+-----------------------------------------------------------------------------
+
+
+imgPixels img = map pix2vec . V.toList $ vector img
+
+mean :: ( Floating num
         , Image img
         , PixelDimsNat (ImagePixel img)  ~ n
         , PixelToVec (ImagePixel img)
         , GenVec n
         ) =>
-        Vec n String -> CharacteristicsExtractor img num n
-mean names = CharacteristicsExtractor f $ fmap ("mean " ++) names
-    where f img = let pixels = map (vec2Nums . pix2vec) . V.toList $ vector img
---                      pixels = unsafePerformIO $ do putStrLn "Pixels:"
---                                                    sequence_ $ map print pixels'
---                                                    return pixels'
-                      vec2Nums = fmap fromIntegral
-                      sum = foldr (vecCombine (+)) (genVec (const 0) undefined) pixels
-                      len = fromIntegral $ length pixels
-                  in fmap (/ len) sum
+    Vec n String -> CharacteristicsExtractor img num n
+
+mean chanelNames = CharacteristicsExtractor (asVec . f . imgPixels) names
+    where (f, names) = mean' chanelNames
 
 
 
+-- | Extracts mean and stdev.
+descriptiveStats :: ( Floating num
+                    , Image img
+                    , PixelDimsNat (ImagePixel img)  ~ n
+                    , PixelToVec (ImagePixel img)
+                    , GenVec n
+                    ) =>
+    Vec n String -> CharacteristicsExtractor img num (n :+: n)
+descriptiveStats chanelNames = let (mf, mnames) = mean' chanelNames
+                                   (vf, _)      = var' chanelNames
+                                   (sf, snames) = stdev' chanelNames
+                                   cf img = let pixels = imgPixels img
+                                                m = mf pixels
+                                                v = vf m pixels
+                                                s = sf v pixels
+                                          in asVec m +:+ asVec s
+                            in CharacteristicsExtractor cf (mnames +:+ snames)
 
+
+-----------------------------------------------------------------------------
 
 
