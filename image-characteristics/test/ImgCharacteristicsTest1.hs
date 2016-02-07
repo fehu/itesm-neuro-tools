@@ -50,13 +50,15 @@ parseArgs [imgPath] = do putStrLn $ "Processing " ++ imgPath ++ " ...\n"
 --                         let ce = imgSizeCharacteristic
 --                         let hist :: CharacteristicsExtractor RGB Double (N4 :^: N3)
 --                             hist = histogram3 "RGB 3D histogram:" nat4
-                         let rgbNames = genVecFrom nat3 $ map (:[]) "RGB"
---                         let mean = Fr.mean rgbNames
-                         let stats :: CharacteristicsExtractor RGB Double (N8 :*: N3)
-                             stats = Fr.descriptiveStats rgbNames
-                         let -- ce = hist `addCharacteristics` mean
-                             ce = stats
-                             cs = imageCharacteristics ce img
+
+--                         let rgbNames = genVecFrom nat3 $ map (:[]) "RGB"
+--                         let stats :: CharacteristicsExtractor RGB Double (N8 :*: N3)
+--                             stats = Fr.descriptiveStats rgbNames
+--                         let ce = stats
+--                             cs = imageCharacteristics ce img
+
+                         let ce = extractorRGB t
+                         let cs = imageCharacteristics ce img
 
                          putStrLn "Characteristics:"
                          forM_ (vec2list $ characteristicsNames ce) $ putStrLn . ("\t" ++ )
