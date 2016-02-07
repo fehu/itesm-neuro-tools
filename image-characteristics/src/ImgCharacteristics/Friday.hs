@@ -137,67 +137,31 @@ histogram3 name _ = let h s i = H.histogram s i :: H.Histogram DIM3 Int32
 
 imgPixels img = map pix2vec . V.toList $ vector img
 
--- | Extracts min, max, mean, stdev, quadratic mean and the three quartiles.
---descriptiveStats :: (Floating num, NatRules n, NatRules (n :+: n), GenVec n) => SomeExtractorBuilder n num
-descriptiveStats :: (Floating num, NatRules n
-                    , NatRules (N2 :*: n)
-                    , NatRules (N3 :*: n)
---                    , NatRules ((N3 :*: n) :+: (N2 :*: n))
-                    , GenVec n
-                    ) =>
-                SomeExtractorBuilder n num
-descriptiveStats = someBuilder $ emptyBuilder +## CE.meanAndStdev
-                                              +#  CE.quartiles
-
---descriptiveStats :: ( Floating num
---                    , Ord num
---                    , Image img
---                    , PixelDimsNat (ImagePixel img)  ~ n
---                    , PixelToVec (ImagePixel img)
---                    , GenVec n
---                    , NatRules n
-----                    , (n :+: Zero) ~ n
---                    ) =>
---    Vec n String -> CharacteristicsExtractor img num (N8 :*: n)
---descriptiveStats chanelNames = let (minf, minn) = min' chanelNames
---                                   (maxf, maxn) = max' chanelNames
---                                   (mf, mnames) = mean' chanelNames
---                                   (sf, snames) = stdev' chanelNames
---                                   (mqf, mqn)   = meanQuadratic' chanelNames
---                                   (q4f, q4n)   = quartiles' chanelNames
---                                   cf img = let pixels = map (fmap fromIntegral)
---                                                       $ imgPixels img
---                                                m = mf pixels
---                                                s = sf m pixels
---                                                mn = minf pixels
---                                                mx = maxf pixels
---                                                mq = mqf pixels
---                                                q4 = q4f pixels
---                                          in mn +:+ mx +:+ m +:+ s +:+ mq +:+ q4
---                            in CharacteristicsExtractor cf
---                                $ minn +:+ maxn +:+ mnames +:+ snames +:+ mqn +:+ q4n
-
+---- | Extracts min, max, mean, stdev, quadratic mean and the three quartiles.
+descriptiveStats :: ( NatRules n, Floating num, Ord num, GenVec n
+                    , NatRules3Pack n
+                    ) => ChanelExtractor n num N8
+descriptiveStats =    CE.min
+                  +#  CE.quartiles
+                  +#  CE.max
+                  +#  CE.meanQuadratic
+                  +## CE.meanAndVar
 
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
-
-
---t :: ExtractorBuilder N3 Double (NCons N9 (NCons N6 NNil))
-t :: ExtractorBuilder N3 Double (NCons N9 (NCons N6 NNil))
-t = emptyBuilder +## LinkedChanelExtractor CE.mean
-                                          (CE.stdev' +: VNil)
-                 +# CE.quartiles
 
 extractorRGB :: ( PixelDimsNat (ImagePixel img) ~ N3
-                , NatsSum ns ~ r
-                , NatRules r
                 , Fractional num
-                , NatsOps ns
                 , Image img
                 , PixelToVec (ImagePixel img)
                 ) =>
-                ExtractorBuilder N3 num ns -> CharacteristicsExtractor img num r
-extractorRGB b = build b (map (fmap fromIntegral) . imgPixels) $ genVecFrom nat3 $ map (:[]) "RGB"
+            ChanelExtractor N3 num c -> CharacteristicsExtractor img num (c :*: N3)
+
+extractorRGB (ChanelExtractor che) = CharacteristicsExtractor f names
+    where (f' , names) = che $ genVecFrom nat3 $ map (:[]) "RGB"
+          f = f' . map (fmap fromIntegral) . imgPixels
+
+
 
 

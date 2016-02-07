@@ -15,15 +15,12 @@
 
 module ImgCharacteristics.ExtractorBuilder (
 
-  ExtractorBuilder
-, SomeExtractorBuilder(..)
-, ChanelExtractor(..)
+  ChanelExtractor(..)
 , LinkedChanelExtractor(..)
-, emptyBuilder
-, someBuilder
+, linkedToExtractor
+
 , (+#)
 , (+##)
-, build
 
 ) where
 
@@ -33,50 +30,17 @@ import ImgCharacteristics
 -----------------------------------------------------------------------------
 
 
-newtype ChanelExtractor n num n2 =
-    ChanelExtractor (Vec n String -> ([Vec n num] -> Vec n2 num, Vec n2 String))
+newtype ChanelExtractor n num c =
+    ChanelExtractor (Vec n String -> ([Vec n num] -> Vec (c :*: n) num, Vec (c :*: n) String))
 
 data LinkedChanelExtractor n num l = LinkedChanelExtractor {
-    lceMaster :: ChanelExtractor n num n
+    lceMaster :: ChanelExtractor n num N1
   , lceDepend :: Vec l (Vec n String -> (Vec n num -> [Vec n num] -> Vec n num, Vec n String))
   }
 
----- | might be needed in case of different dimensions of the dependencies results.
---data LinkedChanelExtractor1 n num n1 n2 =
---    LinkedChanelExtractor1  { lce1Master :: ChanelExtractor n num n1
---                            , lce1Depend :: Vec n1 num -> ChanelExtractor n num n2
---                            }
----- | might be needed in case of different dimensions of the dependencies results.
---data LinkedChanelExtractor2 n num n1 n2 n3 =
---    LinkedChanelExtractor2  { lce2Master  :: ChanelExtractor n num n1
---                            , lce2Depend1 :: Vec n1 num -> ChanelExtractor n num n2
---                            , lce2Depend2 :: Vec n2 num -> ChanelExtractor n num n3
---                            }
-
-
-newtype ExtractorBuilder n num ns = ExtractorBuilder (Nats (ChanelExtractor n num) ns)
-
-data SomeExtractorBuilder n num = forall ns . (NatsOps ns) =>
-    SomeExtractorBuilder (ExtractorBuilder n num ns) (Nat' (NatsSum ns))
-
-someBuilder :: (NatsOps ns, NatsSum ns ~ r, NatRules r) =>
-    ExtractorBuilder n num ns -> SomeExtractorBuilder n num
-someBuilder b = SomeExtractorBuilder b undefined
-
-emptyBuilder :: ExtractorBuilder n num NNil
-emptyBuilder = ExtractorBuilder NatsNil
-
-
-(+#) :: ExtractorBuilder n num ns
-     -> ChanelExtractor n num n2
-     -> ExtractorBuilder n num (NCons n2 ns)
-(+#) (ExtractorBuilder nats) ce = ExtractorBuilder $ ce +:: nats
-
-(+##) :: ExtractorBuilder n num ns
-      -> LinkedChanelExtractor n num l
-      -> ExtractorBuilder n num (NCons (Succ l :*: n) ns)
-(+##) (ExtractorBuilder nats) (LinkedChanelExtractor (ChanelExtractor m) ds) =
-    ExtractorBuilder $ ChanelExtractor chd +:: nats
+linkedToExtractor :: (NatRules n, ((c :+: N1) :*: n) ~ (n :+: (c :*: n))) =>
+    LinkedChanelExtractor n num c -> ChanelExtractor n num (c :+: N1)
+linkedToExtractor (LinkedChanelExtractor (ChanelExtractor m) ds) = ChanelExtractor chd
     where chd chnames = let (f0, n0) = m chnames
                             f pixels = let v0 = f0 pixels
                                      in v0 +: vecAccMap (g pixels) v0 ds
@@ -86,22 +50,23 @@ emptyBuilder = ExtractorBuilder NatsNil
                             in (vecsConcat . f, vecsConcat $ n0 +: nRest)
 
 
-newtype GetCharacteristics    n num (n2 :: Nat) = GetCharacteristics ([Vec n num] -> Vec n2 num)
-newtype CharacteristicsNames (n2 :: Nat)        = CharacteristicsNames (Vec n2 String)
+(+#) :: (NatRules3 c1 c2 n) =>
+    ChanelExtractor n num c1 -> ChanelExtractor n num c2 -> ChanelExtractor n num (c1 :+: c2)
+(+#) (ChanelExtractor ce1) (ChanelExtractor ce2) =
+    ChanelExtractor $ \chnames -> let (f1, n1) = ce1 chnames
+                                      (f2, n2) = ce2 chnames
+                                      f img = f1 img +:+ f2 img
+                                  in (f, n1 +:+ n2)
 
-prepareNPair :: ([Vec n num] -> Vec n2 num, Vec n2 String) -> NPair (GetCharacteristics n num) CharacteristicsNames n2
-prepareNPair (f, n) = NPair (GetCharacteristics f, CharacteristicsNames n)
-
-build :: ( (NatsSum ns) ~ r
-         , NatRules r
-         , NatsOps ns
-         , Fractional num
+(+##) :: ( NatRules n, NatRules3 c1 c2 n
+         , NatRules2 c2 n, NatRules3 c1 c2 N1
+         , (((c1 :+: c2) :+: N1) :*: n)
+            ~ ((c1 :*: n) :+: ((c2 :+: N1) :*: n))
+         , (c1 :+: ((c2 :+: N1) :+: n))
+            ~ (((c1 :+: c2) :+: N1) :+: n)
          ) =>
-     ExtractorBuilder n num ns -> (img -> [Vec n num]) -> Vec n String -> CharacteristicsExtractor img num r --(img -> Vec r num, Vec r String)
-build (ExtractorBuilder nats) toPixels chanelNames = CharacteristicsExtractor f names
-    where x = mapNats (\(ChanelExtractor che) -> prepareNPair $ che chanelNames) nats
-          (fs', ns') = natsUnzip x
-          f img = let pixels = toPixels img
-                in natsFlatten (\(GetCharacteristics f') -> f' pixels) fs'
-          names = natsFlatten (\(CharacteristicsNames ns) -> ns) ns'
+    ChanelExtractor n num c1 -> LinkedChanelExtractor n num c2 -> ChanelExtractor n num (c1 :+: c2 :+: N1)
+(+##) ce lnk = ce +# linkedToExtractor lnk
+
+
 

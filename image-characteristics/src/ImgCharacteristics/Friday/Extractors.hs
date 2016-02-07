@@ -66,16 +66,16 @@ vecsNormalizedSum = vecsNormalized (foldVecs 0 (+))
 -- -- -- -- -- -- -- -- -- -- --  Extractors -- -- -- -- -- -- -- -- -- -- --
         -------------------------------------------------------------
 
-mean :: (Fractional num, GenVec n) => ChanelExtractor n num n
+mean :: (Fractional num, GenVec n, NatRules n) => ChanelExtractor n num N1
 mean = ChanelExtractor $ chanelCharacteristicsExtractor "mean" vecsNormalizedSum
 
-meanGeom :: (Floating num, GenVec n) => ChanelExtractor n num n
+meanGeom :: (Floating num, GenVec n, NatRules n) => ChanelExtractor n num N1
 meanGeom = ChanelExtractor $ chanelCharacteristicsExtractor "geometric mean" f
     where f pixels = root <$> foldVecs 1 (*) pixels
             where root x = x ** (1/len)
                   len = fromIntegral $ length pixels
 
-meanQuadratic :: (Floating num, GenVec n) => ChanelExtractor n num n
+meanQuadratic :: (Floating num, GenVec n, NatRules n) => ChanelExtractor n num N1
 meanQuadratic = ChanelExtractor $ chanelCharacteristicsExtractor "quadratic mean"
           $ fmap sqrt . vecsNormalized (foldVecs 0 f)
     where f x acc = acc + x*x
@@ -88,7 +88,7 @@ var' names = (f, chNames "variance" names)
                 where mmsq = map (fmap square . flip (vecCombine (-)) mean)
                                  pixels
 
-meanAndVar :: (Floating num, GenVec n) => LinkedChanelExtractor n num N1
+meanAndVar :: (Floating num, GenVec n, NatRules n) => LinkedChanelExtractor n num N1
 meanAndVar = LinkedChanelExtractor ImgCharacteristics.Friday.Extractors.mean
                                    (var' +: VNil)
 
@@ -98,7 +98,7 @@ stdev' :: ChanelCharacteristicsExtractor' n num
 stdev' names = (f, chNames "stdev" names)
     where f mean pixels = fmap sqrt (fst (var' names) mean pixels)
 
-meanAndStdev :: (Floating num, GenVec n) => LinkedChanelExtractor n num N1
+meanAndStdev :: (Floating num, GenVec n, NatRules n) => LinkedChanelExtractor n num N1
 meanAndStdev = LinkedChanelExtractor ImgCharacteristics.Friday.Extractors.mean
                                      (var' +: VNil)
 
@@ -108,10 +108,10 @@ binOpCollect' resName g = chanelCharacteristicsExtractor resName f
     where f (h:t) = vecsFoldr g h t
 
 
-min :: (Ord num, Floating num, GenVec n) => ChanelExtractor n num n
+min :: (Ord num, Floating num, GenVec n, NatRules n) => ChanelExtractor n num N1
 min = ChanelExtractor $ binOpCollect' "min" Prelude.min
 
-max :: (Ord num, Floating num, GenVec n) => ChanelExtractor n num n
+max :: (Ord num, Floating num, GenVec n, NatRules n) => ChanelExtractor n num N1
 max = ChanelExtractor $ binOpCollect' "max" Prelude.max
 
 -----------------------------------------------------------------------------
@@ -135,6 +135,6 @@ quartiles' chanelNames = (vecsConcat . quantiles' nat4, vecsConcat names)
     where names = genVec (\i -> chNames ("quartile " ++ show i) chanelNames) nat3
 
 
-quartiles :: (Ord num, Floating num, GenVec n) => ChanelExtractor n num (N3 :*: n)
+quartiles :: (Ord num, Floating num, GenVec n) => ChanelExtractor n num N3
 quartiles = ChanelExtractor quartiles'
 

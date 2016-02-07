@@ -11,7 +11,6 @@
 -- |
 --
 
---{-# OPTIONS_GHC -fcontext-stack=400 #-}
 
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances, TypeOperators #-}
 
@@ -21,6 +20,7 @@ import Nat.Vec
 
 import ImgCharacteristics
 import ImgCharacteristics.Friday as Fr
+import ImgCharacteristics.ExtractorBuilder
 
 import Vision.Image hiding (map)
 import Vision.Image.JuicyPixels (toFridayRGB)
@@ -47,24 +47,15 @@ parseArgs [imgPath] = do putStrLn $ "Processing " ++ imgPath ++ " ...\n"
                          Right img' <- readImage imgPath
                          let img = toFridayRGB $ convertRGB8 img'
 
---                         let ce = imgSizeCharacteristic
---                         let hist :: CharacteristicsExtractor RGB Double (N4 :^: N3)
---                             hist = histogram3 "RGB 3D histogram:" nat4
+                             ce :: CharacteristicsExtractor RGB Double (N8 :*: N3)
+                             ce = extractorRGB descriptiveStats
 
---                         let rgbNames = genVecFrom nat3 $ map (:[]) "RGB"
---                         let stats :: CharacteristicsExtractor RGB Double (N8 :*: N3)
---                             stats = Fr.descriptiveStats rgbNames
---                         let ce = stats
---                             cs = imageCharacteristics ce img
+                             cs = imageCharacteristics ce img
 
---                         let ce = extractorRGB t
---                         let cs = imageCharacteristics ce img
-
---                         putStrLn "Characteristics:"
---                         forM_ (vec2list $ characteristicsNames ce) $ putStrLn . ("\t" ++ )
---                         putStrLn "Characteristic Vectors:"
---                         forM_ cs print
-                         undefined
+                         putStrLn "Characteristics:"
+                         forM_ (vec2list $ characteristicsNames ce) $ putStrLn . ("\t" ++ )
+                         putStrLn "Characteristic Vectors:"
+                         forM_ cs print
 
 
 
