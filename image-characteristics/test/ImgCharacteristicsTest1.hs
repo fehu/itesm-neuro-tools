@@ -57,13 +57,14 @@ parseArgs [imgPath] = do putStrLn $ "Processing " ++ imgPath ++ " ...\n"
 --                         let ce = stats
 --                             cs = imageCharacteristics ce img
 
-                         let ce = extractorRGB t
-                         let cs = imageCharacteristics ce img
+--                         let ce = extractorRGB t
+--                         let cs = imageCharacteristics ce img
 
-                         putStrLn "Characteristics:"
-                         forM_ (vec2list $ characteristicsNames ce) $ putStrLn . ("\t" ++ )
-                         putStrLn "Characteristic Vectors:"
-                         forM_ cs print
+--                         putStrLn "Characteristics:"
+--                         forM_ (vec2list $ characteristicsNames ce) $ putStrLn . ("\t" ++ )
+--                         putStrLn "Characteristic Vectors:"
+--                         forM_ cs print
+                         undefined
 
 
 

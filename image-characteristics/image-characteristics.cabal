@@ -20,8 +20,10 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     ImgCharacteristics
+                       ImgCharacteristics.ExtractorBuilder
                        ImgCharacteristics.Friday
                        ImgCharacteristics.Friday.Utils
+                       ImgCharacteristics.Friday.Extractors
 
   -- other-modules:
 
@@ -36,6 +38,9 @@ library
 
   default-extensions:  Rank2Types
                        MultiParamTypeClasses
+                       TypeFamilies
+                       TypeOperators
+                       DataKinds
   default-language:    Haskell2010
 
 
@@ -51,8 +56,7 @@ executable img-char-test-1
                      , Nat >= 0.1.1
                      , image-characteristics
 
-  default-extensions:  Rank2Types
-                       MultiParamTypeClasses
+--  default-extensions:
   default-language:    Haskell2010
 
 

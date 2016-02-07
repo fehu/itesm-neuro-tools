@@ -12,39 +12,30 @@
 --
 -----------------------------------------------------------------------------
 
-{-# LANGUAGE FlexibleContexts, TypeFamilies, TypeOperators, DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module ImgCharacteristics.Friday (
 
   Img
 , fixedColRowRegions
 
--- * Characteristics
-
 -- TODO: zero histograms for some images ??
 --, histogram
 --, histogram3
 
-, ExtractorBuilder
-, ChanelExtractor(..)
-, LinkedChanelExtractor(..)
-, emptyBuilder
-, (+#)
-, (+##)
-, extractorRGB
-
---, ImgCharacteristics.Friday.mean
 , descriptiveStats
+, extractorRGB
 
   -- for tests
 , imgSizeCharacteristic
-, t
 
 
 ) where
 
 import ImgCharacteristics
 import ImgCharacteristics.Friday.Utils
+import ImgCharacteristics.ExtractorBuilder
+import ImgCharacteristics.Friday.Extractors as CE
 
 import Nat.Vec
 
@@ -57,9 +48,7 @@ import qualified Data.Vector.Storable as V
 
 import Foreign.Storable (Storable)
 import Data.Int
-import Data.Type.Equality
 
-import Control.Arrow (first)
 
 -----------------------------------------------------------------------------
 
@@ -104,6 +93,8 @@ imgSizeCharacteristic = CharacteristicsExtractor f names
           names = "image height" +: "image width" +: VNil
 
 
+-- TODO
+-----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
 histogram' h ix hName n = CharacteristicsExtractor f names
@@ -141,227 +132,62 @@ histogram3 name _ = let h s i = H.histogram s i :: H.Histogram DIM3 Int32
                  in histogram' h (\i -> ix3 i i i) name (undefined :: Nat' n3)
 
 -----------------------------------------------------------------------------
-
-chNames opName = fmap ((opName ++ " ") ++)
-
-chanelCharacteristicsExtractor opName f chanelNames = (f, chNames opName chanelNames)
-
-type ChanelCharacteristicsExtractor n num =
-        (Floating num, GenVec n) =>
-    Vec n String -> ([Vec n num] -> Vec n num, Vec n String)
-
-type ChanelCharacteristicsExtractor' n num =
-        (Floating num, GenVec n) =>
-    Vec n String -> (Vec n num -> [Vec n num] -> Vec n num, Vec n String)
-
-square a = a * a
-
-foldVecs i f = vecsFoldr f (genVec (const i) undefined)
-
-vecsSum :: (Num num, GenVec n) => [Vec n num] -> Vec n num
-vecsSum = foldVecs 0 (+) -- foldr (vecCombine (+)) (genVec (const 0) undefined)
-
-vecsNormalized f pixels = (/ len) <$> f pixels
-    where len = fromIntegral $ length pixels
-
-vecsNormalizedSum :: (Fractional num, GenVec n) => [Vec n num] -> Vec n num
-vecsNormalizedSum = vecsNormalized (foldVecs 0 (+))
-
-newtype Mean n num = Mean (Vec n num)
---newtype Variance n num = Variance (Vec n num)
---newtype StandardDeviation n num = StandardDeviation (Vec n num)
---
---newtype Min n num = Min (Vec n num)
---newtype Max n num = Max (Vec n num)
---
---newtype Quartile n num = Quartile (Vec n num)
---
---class AsVec a where asVec :: a n num -> Vec n num
---
---instance AsVec Mean where asVec (Mean x) = x
---instance AsVec Variance where asVec (Variance x) = x
---instance AsVec StandardDeviation where asVec (StandardDeviation x) = x
---instance AsVec Min where asVec (Min x) = x
---instance AsVec Max where asVec (Max x) = x
---instance AsVec Quartile where asVec (Quartile x) = x
-
-
-mean' :: ChanelCharacteristicsExtractor n num
-mean' = chanelCharacteristicsExtractor "mean" vecsNormalizedSum
-
-meanGeom' :: ChanelCharacteristicsExtractor n num
-meanGeom' = chanelCharacteristicsExtractor "geometric mean" f
-    where f pixels = root <$> foldVecs 1 (*) pixels
-            where root x = x ** (1/len)
-                  len = fromIntegral $ length pixels
-
-meanQuadratic' :: ChanelCharacteristicsExtractor n num
-meanQuadratic' = chanelCharacteristicsExtractor "quadratic mean"
-          $ fmap sqrt . vecsNormalized (foldVecs 0 f)
-    where f x acc = acc + x*x
-
-var' :: ChanelCharacteristicsExtractor' n num
-var' names = (f, chNames "variance" names)
-    where f mean pixels = vecsNormalizedSum mmsq
-                where mmsq = map (fmap square . flip (vecCombine (-)) mean)
-                                 pixels
-
-stdev' :: ChanelCharacteristicsExtractor' n num
-stdev' names = (f, chNames "stdev" names)
-    where f mean pixels = fmap sqrt (fst (var' names) mean pixels)
-
-binOpCollect' resName g = chanelCharacteristicsExtractor resName f
-    where f (h:t) = vecsFoldr g h t
-
-
-min' :: (Ord num) => ChanelCharacteristicsExtractor n num
-min' = binOpCollect' "min" Prelude.min
-
-max' :: (Ord num) => ChanelCharacteristicsExtractor n num
-max' = binOpCollect' "max" Prelude.max
-
------------------------------------------------------------------------------
-
--- TODO: odd/even cases
-quantiles :: ( Succ qm ~ q
-             , Fractional num
-             , GenVec qm
-             ) => Nat' q -> [Vec n num] -> Vec qm (Vec n num)
-quantiles _ pixels = let len = length pixels
-                         qsz = len `quot` 4
-                         inds = genVec (* qsz) undefined
-                   in fmap (pixels !!) inds
-
-quartiles' :: ( Floating num
-              , GenVec n
-              ) =>
-    Vec n String -> ([Vec n num] -> Vec (N3 :*: n) num, Vec (N3 :*: n) String)
-
-quartiles' chanelNames = (vecsConcat . quantiles nat4, vecsConcat names)
-    where names = genVec (\i -> chNames ("quartile " ++ show i) chanelNames) nat3
-
-
 -----------------------------------------------------------------------------
 
 
 imgPixels img = map pix2vec . V.toList $ vector img
 
-mean :: ( Floating num
-        , Image img
-        , PixelDimsNat (ImagePixel img)  ~ n
-        , PixelToVec (ImagePixel img)
-        , GenVec n
-        ) =>
-    Vec n String -> CharacteristicsExtractor img num n
-
-mean chanelNames = CharacteristicsExtractor (f . map (fmap fromIntegral) . imgPixels) names
-    where (f, names) = mean' chanelNames
-
-
-
 -- | Extracts min, max, mean, stdev, quadratic mean and the three quartiles.
-descriptiveStats :: ( Floating num
-                    , Ord num
-                    , Image img
-                    , PixelDimsNat (ImagePixel img)  ~ n
-                    , PixelToVec (ImagePixel img)
+--descriptiveStats :: (Floating num, NatRules n, NatRules (n :+: n), GenVec n) => SomeExtractorBuilder n num
+descriptiveStats :: (Floating num, NatRules n
+                    , NatRules (N2 :*: n)
+                    , NatRules (N3 :*: n)
+--                    , NatRules ((N3 :*: n) :+: (N2 :*: n))
                     , GenVec n
-                    , NatRules n
---                    , (n :+: Zero) ~ n
                     ) =>
-    Vec n String -> CharacteristicsExtractor img num (N8 :*: n)
-descriptiveStats chanelNames = let (minf, minn) = min' chanelNames
-                                   (maxf, maxn) = max' chanelNames
-                                   (mf, mnames) = mean' chanelNames
-                                   (sf, snames) = stdev' chanelNames
-                                   (mqf, mqn)   = meanQuadratic' chanelNames
-                                   (q4f, q4n)   = quartiles' chanelNames
-                                   cf img = let pixels = map (fmap fromIntegral)
-                                                       $ imgPixels img
-                                                m = mf pixels
-                                                s = sf m pixels
-                                                mn = minf pixels
-                                                mx = maxf pixels
-                                                mq = mqf pixels
-                                                q4 = q4f pixels
-                                          in mn +:+ mx +:+ m +:+ s +:+ mq +:+ q4
-                            in CharacteristicsExtractor cf
-                                $ minn +:+ maxn +:+ mnames +:+ snames +:+ mqn +:+ q4n
+                SomeExtractorBuilder n num
+descriptiveStats = someBuilder $ emptyBuilder +## CE.meanAndStdev
+                                              +#  CE.quartiles
+
+--descriptiveStats :: ( Floating num
+--                    , Ord num
+--                    , Image img
+--                    , PixelDimsNat (ImagePixel img)  ~ n
+--                    , PixelToVec (ImagePixel img)
+--                    , GenVec n
+--                    , NatRules n
+----                    , (n :+: Zero) ~ n
+--                    ) =>
+--    Vec n String -> CharacteristicsExtractor img num (N8 :*: n)
+--descriptiveStats chanelNames = let (minf, minn) = min' chanelNames
+--                                   (maxf, maxn) = max' chanelNames
+--                                   (mf, mnames) = mean' chanelNames
+--                                   (sf, snames) = stdev' chanelNames
+--                                   (mqf, mqn)   = meanQuadratic' chanelNames
+--                                   (q4f, q4n)   = quartiles' chanelNames
+--                                   cf img = let pixels = map (fmap fromIntegral)
+--                                                       $ imgPixels img
+--                                                m = mf pixels
+--                                                s = sf m pixels
+--                                                mn = minf pixels
+--                                                mx = maxf pixels
+--                                                mq = mqf pixels
+--                                                q4 = q4f pixels
+--                                          in mn +:+ mx +:+ m +:+ s +:+ mq +:+ q4
+--                            in CharacteristicsExtractor cf
+--                                $ minn +:+ maxn +:+ mnames +:+ snames +:+ mqn +:+ q4n
 
 
 -----------------------------------------------------------------------------
 
-newtype ChanelExtractor n num n2 =
-    ChanelExtractor (Vec n String -> ([Vec n num] -> Vec n2 num, Vec n2 String))
-
-data LinkedChanelExtractor n num l = LinkedChanelExtractor {
-    lceMaster :: ChanelExtractor n num n
-  , lceDepend :: Vec l (Vec n String -> (Vec n num -> [Vec n num] -> Vec n num, Vec n String))
-  }
-
----- | might be needed in case of different dimensions of the dependencies results.
---data LinkedChanelExtractor1 n num n1 n2 =
---    LinkedChanelExtractor1  { lce1Master :: ChanelExtractor n num n1
---                            , lce1Depend :: Vec n1 num -> ChanelExtractor n num n2
---                            }
----- | might be needed in case of different dimensions of the dependencies results.
---data LinkedChanelExtractor2 n num n1 n2 n3 =
---    LinkedChanelExtractor2  { lce2Master  :: ChanelExtractor n num n1
---                            , lce2Depend1 :: Vec n1 num -> ChanelExtractor n num n2
---                            , lce2Depend2 :: Vec n2 num -> ChanelExtractor n num n3
---                            }
-
-
-newtype ExtractorBuilder n num ns = ExtractorBuilder (Nats (ChanelExtractor n num) ns)
-
-emptyBuilder = ExtractorBuilder NatsNil
-
-
-(+#) :: ExtractorBuilder n num ns
-     -> ChanelExtractor n num n2
-     -> ExtractorBuilder n num (NCons n2 ns)
-(+#) (ExtractorBuilder nats) ce = ExtractorBuilder $ ce +:: nats
-
-(+##) :: ExtractorBuilder n num ns
-      -> LinkedChanelExtractor n num l
-      -> ExtractorBuilder n num (NCons (Succ l :*: n) ns)
-(+##) (ExtractorBuilder nats) (LinkedChanelExtractor (ChanelExtractor m) ds) =
-    ExtractorBuilder $ ChanelExtractor chd +:: nats
-    where chd chnames = let (f0, n0) = m chnames
-                            f pixels = let v0 = f0 pixels
-                                     in v0 +: vecAccMap (g pixels) v0 ds
-                            g pixels a e = let (ef,_) = e chnames
-                                             in ef a pixels
-                            nRest = fmap (snd . ($ chnames)) ds
-                            in (vecsConcat . f, vecsConcat $ n0 +: nRest)
-
-
-newtype GetCharacteristics    n num (n2 :: Nat) = GetCharacteristics ([Vec n num] -> Vec n2 num)
-newtype CharacteristicsNames (n2 :: Nat)        = CharacteristicsNames (Vec n2 String)
-
-prepareNPair :: ([Vec n num] -> Vec n2 num, Vec n2 String) -> NPair (GetCharacteristics n num) CharacteristicsNames n2
-prepareNPair (f, n) = NPair (GetCharacteristics f, CharacteristicsNames n)
-
-build :: ( (NatsSum ns) ~ r
-         , NatRules r
-         , NatsOps ns
-         , Fractional num
-         ) =>
-     ExtractorBuilder n num ns -> (img -> [Vec n num]) -> Vec n String -> CharacteristicsExtractor img num r --(img -> Vec r num, Vec r String)
-build (ExtractorBuilder nats) toPixels chanelNames = CharacteristicsExtractor f names
-    where x = mapNats (\(ChanelExtractor che) -> prepareNPair $ che chanelNames) nats
-          (fs', ns') = natsUnzip x
-          f img = let pixels = toPixels img
-                in natsFlatten (\(GetCharacteristics f') -> f' pixels) fs'
-          names = natsFlatten (\(CharacteristicsNames ns) -> ns) ns'
-
 -----------------------------------------------------------------------------
 
 
+--t :: ExtractorBuilder N3 Double (NCons N9 (NCons N6 NNil))
 t :: ExtractorBuilder N3 Double (NCons N9 (NCons N6 NNil))
-t = emptyBuilder +## LinkedChanelExtractor (ChanelExtractor mean')
-                                           (stdev' +: VNil)
-                 +# ChanelExtractor quartiles'
+t = emptyBuilder +## LinkedChanelExtractor CE.mean
+                                          (CE.stdev' +: VNil)
+                 +# CE.quartiles
 
 extractorRGB :: ( PixelDimsNat (ImagePixel img) ~ N3
                 , NatsSum ns ~ r

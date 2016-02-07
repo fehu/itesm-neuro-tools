@@ -11,7 +11,7 @@
 -- |
 --
 
-{-# LANGUAGE TypeFamilies, DataKinds, TypeOperators, FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module ImgCharacteristics.Friday.Utils (
 
