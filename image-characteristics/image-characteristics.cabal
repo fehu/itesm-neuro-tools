@@ -26,6 +26,8 @@ library
                        ImgCharacteristics.Friday.Extractors
                        ImgCharacteristics.GTK
                        ImgCharacteristics.GTK.FromFriday
+                       ImgCharacteristics.Weka
+                       ImgCharacteristics.MainTemplate
 
   -- other-modules:
 
@@ -38,6 +40,9 @@ library
                      , vector >= 0.11
                      , gtk3 >= 0.14
                      , array >= 0.5
+                     , directory >= 1.2
+                     , WekaData >= 0.2
+                     , containers > 0.5
   hs-source-dirs:      src
 
   default-extensions:  Rank2Types
@@ -45,18 +50,6 @@ library
                        TypeFamilies
                        TypeOperators
                        DataKinds
-  default-language:    Haskell2010
-
-
-
-executable img-char-test-1
-  hs-source-dirs:      test
-  main-is:             ImgCharacteristicsTest1.hs
-
-  build-depends:       base >=4.8 && <4.9
-                     , friday == 0.2.2.0
-                     , Nat >= 0.1.3
-                     , image-characteristics
   default-language:    Haskell2010
 
 
@@ -75,3 +68,16 @@ executable gtk-test-1
   ghc-options:      -threaded
 
 
+
+executable main-test-1
+  hs-source-dirs:      test
+  main-is:             MainTest.hs
+
+  build-depends:       base >=4.8 && <4.9
+                     , image-characteristics
+                     , friday == 0.2.2.0
+                     , Nat >= 0.1.3
+                     , gtk3 >= 0.14
+
+  default-language:    Haskell2010
+  ghc-options:      -threaded
