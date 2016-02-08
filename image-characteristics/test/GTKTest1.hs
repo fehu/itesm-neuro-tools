@@ -32,6 +32,8 @@ fixedRegions = FixedColRowRegions{ rRow = 5
                                  }           -- (height, width)
 
 
+data Class = A | B | C deriving (Show, Enum, Bounded)
+
 instance RegionsExtractor RGB where foreachRegion = fixedColRowRegions fixedRegions
                                     foreachRegionIO = fixedColRowRegions fixedRegions
 
@@ -56,7 +58,7 @@ parseArgs [imgPath] = do putStrLn $ "Processing " ++ imgPath ++ " ...\n"
                              ce :: CharacteristicsExtractor RGB Double (N8 :*: N3)
                              ce = extractorRGB descriptiveStats
 
-                         cs <- gtkExtractLearnData ce img :: IO [LearnDataEntry (N8 :*: N3) Double Bool]
+                         cs <- gtkExtractLearnData ce img :: IO [LearnDataEntry (N8 :*: N3) Double Class]
 
                          putStrLn "Characteristics:"
                          forM_ (vec2list $ characteristicsNames ce) $ putStrLn . ("\t" ++ )
