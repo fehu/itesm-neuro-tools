@@ -1,16 +1,5 @@
------------------------------------------------------------------------------
---
--- Module      :  MainTest
--- Copyright   :
--- License     :  MIT
---
--- Maintainer  :  -
--- Stability   :
--- Portability :
---
--- |
---
------------------------------------------------------------------------------
+-- DescriptiveStatsHSV
+
 
 {-# LANGUAGE FlexibleInstances #-}
 
@@ -22,17 +11,20 @@ import ImgCharacteristics.GTK
 import ImgCharacteristics.Friday
 import ImgCharacteristics.GTK.FromFriday
 
-import Vision.Image (RGB)
-
+import Vision.Image (HSV)
 
 fixedRegions = FixedColRowRegions{ rRow = 5
                                  , rCol = 5
                                  , minRegionSize = (200, 200)
                                  }           -- (height, width)
 
-instance RegionsExtractor RGB where foreachRegion   = fixedColRowRegions fixedRegions
+instance RegionsExtractor HSV where foreachRegion   = fixedColRowRegions fixedRegions
                                     foreachRegionIO = fixedColRowRegions fixedRegions
 
-main = do ci <- classProvider :: IO (ClassesInterview RGB Bool)
-          main' ci (extractorRGB descriptiveStats)
+main = do ci <- classProvider :: IO (ClassesInterview HSV Bool)
+          main' ci (extractorHSV descriptiveStats)
+
+
+
+
 

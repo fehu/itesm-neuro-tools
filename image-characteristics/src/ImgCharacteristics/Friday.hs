@@ -24,7 +24,12 @@ module ImgCharacteristics.Friday (
 --, histogram3
 
 , descriptiveStats
+
 , extractorRGB
+, extractorHSV
+, extractorGrey
+
+, combineExtractors
 
   -- for tests
 , imgSizeCharacteristic
@@ -152,17 +157,41 @@ descriptiveStats =    CE.min
 
 -----------------------------------------------------------------------------
 
-extractorRGB :: ( PixelDimsNat (ImagePixel img) ~ N3
-                , Fractional num
-                , Image img
-                , PixelToVec (ImagePixel img)
-                ) =>
-            ChanelExtractor N3 num c -> CharacteristicsExtractor img num (c :*: N3)
+extractorRGB :: ( Fractional num) =>
+            ChanelExtractor N3 num c -> CharacteristicsExtractor RGB num (c :*: N3)
 
 extractorRGB (ChanelExtractor che) = CharacteristicsExtractor f names
     where (f' , names) = che $ genVecFrom nat3 $ map (:[]) "RGB"
           f = f' . map (fmap fromIntegral) . imgPixels
 
+
+extractorHSV :: ( Fractional num) =>
+            ChanelExtractor N3 num c -> CharacteristicsExtractor HSV num (c :*: N3)
+extractorHSV (ChanelExtractor che) = CharacteristicsExtractor f names
+    where (f' , names) = che $ genVecFrom nat3 $ map (:[]) "HSV"
+          f = f' . map (fmap fromIntegral) . imgPixels
+
+
+extractorGrey :: (Fractional num, NatRules c) =>
+            ChanelExtractor N1 num c -> CharacteristicsExtractor Grey num c
+extractorGrey (ChanelExtractor che) = CharacteristicsExtractor f names
+    where (f' , names) = che $ genVecFrom nat1 $ map (:[]) "G"
+          f = f' . map (fmap fromIntegral) . imgPixels
+
+
+-----------------------------------------------------------------------------
+
+combineExtractors :: ( Fractional num
+                     , Convertible img0 img1
+                     , Convertible img0 img2
+                     ) =>
+                     CharacteristicsExtractor img1 num c1
+                  -> CharacteristicsExtractor img2 num c2
+                  -> CharacteristicsExtractor img0 num (c1 :+: c2)
+combineExtractors (CharacteristicsExtractor f1 ns1)
+                  (CharacteristicsExtractor f2 ns2) =
+    CharacteristicsExtractor f (ns1 +:+ ns2)
+    where f img = f1 (convert img) +:+ f2 (convert img)
 
 
 

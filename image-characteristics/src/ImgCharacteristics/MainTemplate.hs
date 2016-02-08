@@ -18,7 +18,6 @@ module ImgCharacteristics.MainTemplate where
 import ImgCharacteristics
 import ImgCharacteristics.GTK
 import ImgCharacteristics.Friday
-import ImgCharacteristics.GTK.FromFriday -- provides ImageToPixbuf RGB
 import ImgCharacteristics.Weka
 
 import System.Environment
@@ -30,7 +29,7 @@ import Data.Either
 import Data.List (intercalate)
 import Control.Monad
 
-import Vision.Image (RGB)
+import Vision.Image (convert, RGB, Convertible)
 
 -----------------------------------------------------------------------------
 
@@ -38,24 +37,16 @@ import Vision.Image (RGB)
 main' :: ( Num num
          , Show num
          , Class class'
-         , RegionsExtractor RGB
+         , RegionsExtractor img
+         , ImageToPixbuf img
+         , Convertible RGB img
          )
       =>
-           ClassesInterview RGB class'
-        -> CharacteristicsExtractor RGB num l
+           ClassesInterview img class'
+        -> CharacteristicsExtractor img num l
         -> IO ()
 main' ci ce = getArgs >>= parseArgs' ci ce
 
-parseArgs' :: ( Num num
-              , Show num
-              , Class class'
-              , RegionsExtractor RGB
-              )
-          =>
-              ClassesInterview RGB class'
-           -> CharacteristicsExtractor RGB num l
-           -> [String]
-           -> IO ()
 
 parseArgs' ci ce []     = showHelp >> exitFailure
 parseArgs' ci ce ["-h"] = showHelp >> exitSuccess
@@ -86,24 +77,13 @@ listDirectory path =
   where f filename = filename /= "." && filename /= ".."
 
 
-collectImagesCharacteristics :: ( Num num
-              , Show num
-              , Class class'
-              , RegionsExtractor RGB
-              )
-          =>
-              ClassesInterview RGB class'
-           -> CharacteristicsExtractor RGB num l
-           -> String
-           -> [String]
-           -> String
-           -> IO ()
+
 collectImagesCharacteristics ci ce relName imgPaths target = do
     imgs' <- mapM readImage imgPaths
 
     let (failed, imgs) = partitionEithers imgs'
 
-    cs <- collectCharacteristics ci ce imgs
+    cs <- collectCharacteristics ci ce $ map convert imgs
 
     let !weka = learnDataToWeka (characteristicsNames ce) [minBound..maxBound] cs
 
