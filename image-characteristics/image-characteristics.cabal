@@ -24,6 +24,7 @@ library
                        ImgCharacteristics.Friday
                        ImgCharacteristics.Friday.Utils
                        ImgCharacteristics.Friday.Extractors
+                       ImgCharacteristics.GTK
 
   -- other-modules:
 
@@ -32,8 +33,9 @@ library
                      , JuicyPixels >= 3
                      , friday-juicypixels == 0.1.1
                      , friday == 0.2.2.0
-                     , Nat >= 0.1.2
+                     , Nat >= 0.1.3
                      , vector >= 0.11
+                     , gtk3 >= 0.14
   hs-source-dirs:      src
 
   default-extensions:  Rank2Types
@@ -53,12 +55,26 @@ executable img-char-test-1
                      , JuicyPixels >= 3
                      , friday-juicypixels == 0.1.1
                      , friday == 0.2.2.0
-                     , Nat >= 0.1.1
+                     , Nat >= 0.1.3
                      , image-characteristics
+  default-language:    Haskell2010
+
+executable gtk-test-1
+  hs-source-dirs:      test
+  main-is:             GTKTest1.hs
+
+  build-depends:       base >=4.8 && <4.9
+                     , image-characteristics
+                     , JuicyPixels >= 3
+                     , friday-juicypixels == 0.1.1
+                     , friday == 0.2.2.0
+                     , Nat >= 0.1.3
+--                     , vector >= 0.11
+                     , gtk3 >= 0.14
+                     , array >= 0.5
 
 --  default-extensions:
   default-language:    Haskell2010
-
-
+  ghc-options:      -threaded
 
 
