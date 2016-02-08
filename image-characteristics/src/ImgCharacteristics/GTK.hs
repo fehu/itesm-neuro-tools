@@ -95,27 +95,6 @@ instance (ImageToPixbuf img) =>RegionsClassesProvider ClassesInterview img where
                        takeMVar askVar
 
 
---gtkExtractLearnData :: ( Num num
---                       , Show num --tmp
---                       , RegionsExtractor img, ImageToPixbuf img
---                       , Enum class', Bounded class', Show class'
---                       ) =>
---    CharacteristicsExtractor img num l -> img -> IO [LearnDataEntry l num class']
-
---gtkExtractLearnData ces img = do
---    askVar <- newEmptyMVar
---
---    uiThread <- forkOS $ do initGUI
---                            ci <- imagesCInterview
---                            putMVar askVar ci
---                            mainGUI
---    ci <- takeMVar askVar
---    lData <- extractLearnData ci ces img
---    ciDestroy ci
---    return lData
-
-
-
 
 
 

@@ -100,7 +100,6 @@ imageCharacteristics ce img = foreachRegion img
                             $ \i -> characteristics ce i
 
 extractLearnData :: ( Num num
-                    , Show num --tmp
                     , RegionsExtractor img
                     , RegionsClassesProvider p img
                     , Class class'
