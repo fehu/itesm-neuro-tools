@@ -16,10 +16,8 @@
 module ImgCharacteristics.GTK (
 
   ClassesInterview(ciWindow, ciAskClass, ciDestroy)
-, imagesCInterview
+--, imagesCInterview
 , ImageToPixbuf(..)
-
-, gtkExtractLearnData
 
 ) where
 
@@ -87,27 +85,34 @@ imagesCInterview = do
     return $ ClassesInterview window askClass mainQuit
 
 
-instance RegionsClassesProvider ClassesInterview where regionClass = ciAskClass
+instance (ImageToPixbuf img) =>RegionsClassesProvider ClassesInterview img where
+    regionClass = ciAskClass
+    classProvider = do askVar <- newEmptyMVar
+                       uiThread <- forkOS $ do initGUI
+                                               ci <- imagesCInterview
+                                               putMVar askVar ci
+                                               mainGUI
+                       takeMVar askVar
 
 
-gtkExtractLearnData :: ( Num num
-                       , Show num --tmp
-                       , RegionsExtractor img, ImageToPixbuf img
-                       , Enum class', Bounded class', Show class'
-                       ) =>
-    CharacteristicsExtractor img num l -> img -> IO [LearnDataEntry l num class']
+--gtkExtractLearnData :: ( Num num
+--                       , Show num --tmp
+--                       , RegionsExtractor img, ImageToPixbuf img
+--                       , Enum class', Bounded class', Show class'
+--                       ) =>
+--    CharacteristicsExtractor img num l -> img -> IO [LearnDataEntry l num class']
 
-gtkExtractLearnData ces img = do
-    askVar <- newEmptyMVar
-
-    uiThread <- forkOS $ do initGUI
-                            ci <- imagesCInterview
-                            putMVar askVar ci
-                            mainGUI
-    ci <- takeMVar askVar
-    lData <- extractLearnData ci ces img
-    ciDestroy ci
-    return lData
+--gtkExtractLearnData ces img = do
+--    askVar <- newEmptyMVar
+--
+--    uiThread <- forkOS $ do initGUI
+--                            ci <- imagesCInterview
+--                            putMVar askVar ci
+--                            mainGUI
+--    ci <- takeMVar askVar
+--    lData <- extractLearnData ci ces img
+--    ciDestroy ci
+--    return lData
 
 
 

@@ -29,11 +29,12 @@ module ImgCharacteristics.Friday (
   -- for tests
 , imgSizeCharacteristic
 
+, U.readImage
 
 ) where
 
 import ImgCharacteristics
-import ImgCharacteristics.Friday.Utils
+import ImgCharacteristics.Friday.Utils as U
 import ImgCharacteristics.ExtractorBuilder
 import ImgCharacteristics.Friday.Extractors as CE
 

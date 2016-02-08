@@ -11,7 +11,12 @@
 -- |
 --
 
-{-# LANGUAGE ExistentialQuantification, FlexibleInstances, GADTs, BangPatterns #-}
+{-# LANGUAGE ExistentialQuantification
+           , FlexibleInstances
+           , GADTs
+           , BangPatterns
+           , ConstraintKinds
+       #-}
 
 module ImgCharacteristics (
 
@@ -25,6 +30,7 @@ module ImgCharacteristics (
 , ForeachRegion
 , FixedColRowRegions(..)
 
+, Class
 , LearnDataEntry(..)
 , RegionsClassesProvider(..)
 
@@ -78,8 +84,11 @@ data LearnDataEntry l num class' = LearnDataEntry !(Vec l num, class')
 instance (Show n, Show c) => Show (LearnDataEntry l n c) where
     show (LearnDataEntry (v,c)) = show c ++ ": " ++ show v
 
-class RegionsClassesProvider p where
-    regionClass :: p img class' -> img -> IO class'
+type Class c = (Show c, Enum c, Bounded c)
+
+class RegionsClassesProvider p img where
+    classProvider :: (Class class') => IO (p img class')
+    regionClass   :: (Class class') => p img class' -> img -> IO class'
 
 -----------------------------------------------------------------------------
 
@@ -93,7 +102,8 @@ imageCharacteristics ce img = foreachRegion img
 extractLearnData :: ( Num num
                     , Show num --tmp
                     , RegionsExtractor img
-                    , RegionsClassesProvider p
+                    , RegionsClassesProvider p img
+                    , Class class'
                     ) =>
     p img class' -> CharacteristicsExtractor img num l -> img -> IO [LearnDataEntry l num class']
 extractLearnData p ce img = sequence $ foreachRegionIO img

@@ -21,6 +21,8 @@ module ImgCharacteristics.Friday.Utils (
 , PixelDimsNat
 , PixelToVec(..)
 
+, readImage
+
 ) where
 
 import Nat.Vec
@@ -31,6 +33,9 @@ import Vision.Primitive.Shape
 import Vision.Image.RGB.Type
 import Vision.Image.HSV.Type
 import Vision.Image.Grey.Type
+
+import qualified Codec.Picture as P
+import Vision.Image.JuicyPixels (toFridayRGB)
 
 import Data.Word
 
@@ -61,3 +66,11 @@ instance PixelToVec HSVPixel where pix2vec p = hsvHue p +: hsvSat p +: hsvValue 
 instance PixelToVec GreyPixel where pix2vec (GreyPixel p) = p +: VNil
 
 -----------------------------------------------------------------------------
+
+readImage imgPath = do img' <- P.readImage imgPath
+                       return $ fmap (toFridayRGB . P.convertRGB8) img'
+
+
+-----------------------------------------------------------------------------
+
+

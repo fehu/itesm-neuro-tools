@@ -19,13 +19,9 @@ module Main where
 import Nat.Vec
 
 import ImgCharacteristics
-import ImgCharacteristics.Friday as Fr
-import ImgCharacteristics.ExtractorBuilder
+import ImgCharacteristics.Friday
 
-import Vision.Image hiding (map)
-import Vision.Image.JuicyPixels (toFridayRGB)
-import Vision.Image.RGB.Type
-import Codec.Picture
+import Vision.Image (RGB)
 
 import System.Environment
 import System.Exit
@@ -45,10 +41,9 @@ instance RegionsExtractor RGB where foreachRegion = fixedColRowRegions fixedRegi
                                     foreachRegionIO = fixedColRowRegions fixedRegions
 
 parseArgs [imgPath] = do putStrLn $ "Processing " ++ imgPath ++ " ...\n"
-                         Right img' <- readImage imgPath
-                         let img = toFridayRGB $ convertRGB8 img'
+                         Right img <- readImage imgPath
 
-                             ce :: CharacteristicsExtractor RGB Double (N8 :*: N3)
+                         let ce :: CharacteristicsExtractor RGB Double (N8 :*: N3)
                              ce = extractorRGB descriptiveStats
 
                              cs = imageCharacteristics ce img
