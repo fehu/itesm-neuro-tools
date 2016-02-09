@@ -175,7 +175,7 @@ extractorHSV (ChanelExtractor che) = CharacteristicsExtractor f names
 extractorGrey :: (Fractional num, NatRules c) =>
             ChanelExtractor N1 num c -> CharacteristicsExtractor Grey num c
 extractorGrey (ChanelExtractor che) = CharacteristicsExtractor f names
-    where (f' , names) = che $ genVecFrom nat1 $ map (:[]) "G"
+    where (f' , names) = che $ genVecFrom nat1 $ map (:[]) "I"
           f = f' . map (fmap fromIntegral) . imgPixels
 
 

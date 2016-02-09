@@ -56,8 +56,6 @@ parseArgs' ci ce [_, _] = showHelp >> exitFailure
 parseArgs' ci ce ["--dir", dir, relName, target] = do
     imgs' <- listDirectory dir
     let imgs = map (dir </>) imgs'
-    putStrLn dir
-    print imgs
     collectImagesCharacteristics ci ce relName imgs target
 
 parseArgs' ci ce args = do
@@ -82,6 +80,8 @@ collectImagesCharacteristics ci ce relName imgPaths target = do
     imgs' <- mapM readImage imgPaths
 
     let (failed, imgs) = partitionEithers imgs'
+
+    forM_ failed putStrLn
 
     cs <- collectCharacteristics ci ce $ map convert imgs
 
