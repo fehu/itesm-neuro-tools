@@ -12,11 +12,6 @@ import weka.core.{Attribute, Instances}
 import scala.collection.convert.decorateAsScala._
 import scala.util.{Failure, Success}
 
-object ANN {
-
-}
-
-//case class DataDescriptor(classAttr: String, dropClasses: DropClasses)
 
 abstract class CrossValidation[C <: Classifier] {
   def validationFolds: Int
@@ -72,13 +67,13 @@ object PrepareInstances{
       is
   }
 
-  def onlyAttributes(attrs: Set[String]): Instances => Instances = {
-    is =>
-      is.enumerateAttributes.asInstanceOf[util.Enumeration[Attribute]].asScala.foreach{
-        a => if (!attrs.contains(a.name)) is.deleteAttributeType(a.`type`)
-      }
-    is
-  }
+//  def onlyAttributes(attrs: Set[String]): Instances => Instances = {
+//    is =>
+//      is.enumerateAttributes.asInstanceOf[util.Enumeration[Attribute]].asScala.foreach{
+//        a => if (!attrs.contains(a.name)) is.deleteAttributeType(a.`type`)
+//      }
+//    is
+//  }
 
 }
 
