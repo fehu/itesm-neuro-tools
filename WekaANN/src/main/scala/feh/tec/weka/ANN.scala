@@ -54,10 +54,13 @@ object PrepareInstances{
     is =>
       val drop = toDrop.map(is.classAttribute.indexOfValue)
 
+      println("dropping instances with class in " + toDrop)
+
       for {
         i <- (0 until is.numInstances()).reverse
         inst = is.instance(i)
-        if drop contains inst.classIndex
+        j = inst.value(is.classAttribute).toInt
+        if drop contains j
       } is.delete(i)
 
       is
