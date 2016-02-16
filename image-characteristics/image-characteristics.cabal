@@ -5,7 +5,7 @@ name:                image-characteristics
 version:             0.2.2.0
 synopsis:            Image characteristics extraction
 -- description:
-homepage:            -
+homepage:            https://github.com/fehu/itesm-neuro-tools/tree/master/image-characteristics
 license:             MIT
 license-file:        LICENSE
 author:              Dmitry K
