@@ -38,12 +38,14 @@ instance ImageToPixbuf Grey where img2Pixbuf = rgbImg2Pixbuf . (convert :: Grey 
 -- from http://stackoverflow.com/questions/25417109/how-to-display-an-image-from-repa-devil-in-gtkimage-in-haskell
 rgbImg2Pixbuf img =
     do let Z :. h :. w = shape img
+           n = nChannels img
        pbuf <- pixbufNew ColorspaceRgb False 8 w h
        rowStrideBytes <- pixbufGetRowstride pbuf
-       let rowStride = rowStrideBytes `quot` nChannels img
        pixbufPixels <- pixbufGetPixels pbuf
-       let copyPixel (x, y) = writeArray pixbufPixels
-                                        (y * rowStride + x)
-                                        (index img (Z:. y :. x))
+       let copyPixel (x, y) = sequence_ $ do i <- [0..n-1]
+                                             return $ writeArray pixbufPixels
+                                                                 (y * rowStrideBytes + x * n + i)
+                                                                 (pixIndex pixel i)
+                            where pixel = index img (Z:. y :. x)
        mapM_ copyPixel $ range ((0, 0), (w-1, h-1))
        return pbuf
