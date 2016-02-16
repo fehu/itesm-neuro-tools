@@ -1,0 +1,4 @@
+#!/bin/bash
+scala -classpath "$WEKA_HOME/weka.jar" -i "$1"
+
+# -e "import weka.core._; import weka.core.Utils._"
