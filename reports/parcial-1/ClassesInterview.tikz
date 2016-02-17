@@ -1,0 +1,56 @@
+% see http://www.texample.net/tikz/examples/flexible-flow-chart/
+
+\begin{tikzpicture}[%
+    >=triangle 60,              % Nice arrows; your taste may be different
+    node distance=20mm and 50mm, % Global setup of box spacing
+    ]
+
+\def\bind{$>>=$}
+
+\tikzset{
+  base/.style={draw, on grid, align=center, minimum height=4ex,text width=8em}, % on chain, 
+  mvar/.style={base, rectangle, rounded corners}
+  };
+
+% MAIN Thread
+\node[base] (main1) at (0,0) { newEmptyMVar };
+
+\node[base, below=of main1] (forkOS) { forkOS };
+
+\node[base, below=of forkOS, label=\emph{blocks \quad thread}] (takeMVar) { takeMVar };
+
+\node[on grid, below=of takeMVar] (return) { \textbf{ClassesInterview} };
+
+% MVARs
+\node[mvar, right=of main1] (mVar) { MVar \\(ClassesInterview a class') };
+
+% GUI Thread
+
+\node[base, right=80mm of forkOS] (initGUI) { initGUI };
+
+\node[base, below=of initGUI] (ci) {create interview};
+
+\node[base, below=of ci] (putMVar) { putMVar };
+
+\node[base, below=of putMVar] (mainGUI) { mainGUI };
+
+\node[on grid, below=of mainGUI] (guiExec) { UI execution \dots };
+
+
+
+
+\draw (main1.east) edge[o->] node[label=above:{\bind}]{} (mVar.west);
+\draw (main1) edge[o->] node[label=right:{$>>$}]{} (forkOS);
+\draw (forkOS) edge[o->] node[label=right:{$>>$}]{} (takeMVar);
+\draw (takeMVar) edge[o->] (return);
+
+\draw (forkOS) edge[->, dashed] (initGUI);
+\draw (putMVar.west) edge[->, dashed, bend left] (mVar);
+\draw (mVar) edge[->, dashed, bend left] (takeMVar.east);
+
+\draw (initGUI) edge[o->] node[label=right:{$>>$}]{} (ci);
+\draw (ci) edge[o->] node[label=right:{\bind}]{} (putMVar);
+\draw (putMVar) edge[o->] node[label=right:{$>>$}]{} (mainGUI);
+\draw (mainGUI) edge[->] (guiExec);
+
+\end{tikzpicture}

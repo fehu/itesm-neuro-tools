@@ -1,0 +1,83 @@
+\begin{tikzpicture}[%
+    >=triangle 60,              % Nice arrows; your taste may be different
+    node distance=20mm and 40mm, % Global setup of box spacing
+    ]
+
+\def\bind{$>>=$}
+
+\tikzset{
+  base/.style={on grid, align=center, minimum height=4ex,text width=8em}, % on chain, 
+  proc/.style={base, draw},
+  mvar/.style={base, draw, rounded corners}
+  };
+  
+% MAIN Thread
+\node[base] (interview) { \emph{ClassesInterview} };
+
+%\node[base, below= of interview] (foreachRegionIO) { foreachRegionIO };
+
+\node[base, below=of interview] (lambdaRegion) { $\lambda \text{ region } \rightarrow$ };
+\node[proc, below=10mm of lambdaRegion] (characteristics) { characteristics };
+\node[proc, below=of characteristics] (regionClass) { regionClass };
+\node[base, below=of regionClass] (LearnDataEntry) { \textbf{LearnDataEntry} };
+\node [draw=black!50, 
+       fit={(lambdaRegion) (characteristics) (regionClass) (LearnDataEntry)},
+       label=above:{\emph{foreachRegionIO}} 
+      ] (foreachRegionIO) {};
+
+\node[base, below=of LearnDataEntry] (LearnDataEntries)
+        { IO \\ $\left[\text{LearnDataEntry}\right]$ };
+
+\draw[->] (interview) -- ($(foreachRegionIO.north) - (0, -6mm)$);
+\draw[o->] (characteristics) -- (regionClass);
+\draw[o->] (regionClass) -- (LearnDataEntry);
+\draw[o->] (foreachRegionIO.south) -- (LearnDataEntries);
+
+
+%AskClass
+
+\node[base, right=of lambdaRegion] (lambdaRegion2){ $\lambda \text{ region } \rightarrow$ };
+\node[proc, below=10mm of lambdaRegion2] (setImage) { setImage };
+\node[proc, below=15mm of setImage] (unlockUI) { unlockUI };
+\node[proc, below=15mm of unlockUI, label=\emph{blocks \quad thread}]
+    (takeMVar) { takeMVar };
+\node[proc, below=15mm of takeMVar] (lockUI) { lockUI };
+\node[base, below=15mm of lockUI] (return) { class' };
+\node[draw=black!50, 
+      fit={ (lambdaRegion2) (setImage) (unlockUI) (takeMVar) (lockUI) (return)},
+      label=above:{\emph{regionClass}}
+     ] (regionClassGroup) {};
+
+\draw[o->] (setImage) -- (unlockUI);
+\draw[o->] (unlockUI) -- (takeMVar);
+\draw[o->] (takeMVar) -- (lockUI);
+\draw[o->] (lockUI)   -- (return);
+
+% GUI Thread
+\node[base, right=80mm of interview] (guiExec) { UI execution };
+
+\node[proc, right=of setImage] (putMVar) { putMVar class' };
+\node[draw=black!50, fit={(putMVar)}, label=above:{\emph{on} buttonActivated}]
+    (buttonActivated) {};
+
+\draw[->] (guiExec) -- ($(buttonActivated.north) - (0, -6mm)$);
+
+% MVARs
+
+\node[mvar, below=20mm of putMVar] (mVar) { MVar class' };
+
+% Between
+
+\draw[->, dashed] (putMVar) -- (mVar);
+\draw[->, dashed] (mVar)    |- (takeMVar.east);
+
+\draw[->, dashed] ($(regionClass.east) + (0,1mm)$) -- ($(regionClass.east) + (5mm,1mm)$) 
+                                                   |- (lambdaRegion2.west);
+\draw[->, dashed] (return.west) -- ($(return.west) + (-5mm,0)$)
+                                |- ($(regionClass.east) - (0,1mm)$);
+
+
+\node[proc, circle, right=60mm of interview, text width=2em] (user) { user };
+\draw[->] (user) -- ($(buttonActivated) - (12mm,-10mm)$);
+
+\end{tikzpicture}
