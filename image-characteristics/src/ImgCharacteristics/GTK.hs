@@ -85,7 +85,7 @@ imagesCInterview = do
     return $ ClassesInterview window askClass mainQuit
 
 
-instance (ImageToPixbuf img) =>RegionsClassesProvider ClassesInterview img where
+instance (ImageToPixbuf img) => RegionsClassesProvider ClassesInterview img where
     regionClass = ciAskClass
     classProvider = do askVar <- newEmptyMVar
                        uiThread <- forkOS $ do initGUI

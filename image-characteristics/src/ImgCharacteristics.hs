@@ -74,7 +74,7 @@ class RegionsExtractor img where foreachRegion   :: ForeachRegion img
 
 data FixedColRowRegions = FixedColRowRegions { rRow          :: Int
                                              , rCol          :: Int
-                                             , minRegionSize :: (Int, Int) -- | (height, wifth)
+                                             , minRegionSize :: (Int, Int) -- ^ (height, width)
                                              }
 
 -----------------------------------------------------------------------------

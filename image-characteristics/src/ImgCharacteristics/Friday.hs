@@ -143,7 +143,7 @@ histogram3 name _ = let h s i = H.histogram s i :: H.Histogram DIM3 Int32
 
 imgPixels img = map pix2vec . V.toList $ vector img
 
----- | Extracts min, max, mean, stdev, quadratic mean and the three quartiles.
+-- | Extracts min, the three quartiles, max, quadratic mean, mean and stdev.
 descriptiveStats :: ( NatRules n, Floating num, Ord num, GenVec n
                     , NatRules3Pack n
                     ) => ChanelExtractor n num N8
