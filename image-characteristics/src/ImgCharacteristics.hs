@@ -66,8 +66,8 @@ characteristicsFromVec v = CharacteristicsExtractor cs names
 
 -----------------------------------------------------------------------------
 
-type ForeachRegion   img = forall a . img -> (img -> a) -> [a]
-type ForeachRegionIO img = forall a . img -> (img -> IO a) -> IO [a]
+type ForeachRegion   img = forall a . img -> (img -> (Int, Int) -> a) -> [a]
+type ForeachRegionIO img = forall a . img -> (img -> (Int, Int) -> IO a) -> IO [a]
 
 class RegionsExtractor img where foreachRegion   :: ForeachRegion img
                                  foreachRegionIO :: ForeachRegion img
@@ -97,18 +97,24 @@ imageCharacteristics :: (Num n, RegionsExtractor img) =>
                      -> img
                      -> [Vec l n]
 imageCharacteristics ce img = foreachRegion img
-                            $ \i -> characteristics ce i
+                            $ \i _ -> characteristics ce i
 
 extractLearnData :: ( Num num
                     , RegionsExtractor img
                     , RegionsClassesProvider p img
                     , Class class'
                     ) =>
-    p img class' -> CharacteristicsExtractor img num l -> img -> IO [LearnDataEntry l num class']
-extractLearnData p ce img = sequence $ foreachRegionIO img
-                          $ \i -> do let !cs = strictVec $ characteristics ce i
-                                     clz <- regionClass p i
-                                     return $ LearnDataEntry (cs, clz)
+    p img class' -> CharacteristicsExtractor img num l
+                 -> Maybe (img -> String -> (Int, Int) -> class' -> IO())
+                 -> img
+                 -> String -- ^ image name
+                 -> IO [LearnDataEntry l num class']
+extractLearnData p ce mbSave img iname = sequence $ foreachRegionIO img
+                          $ \i ind -> do let !cs = strictVec $ characteristics ce i
+                                         clz <- regionClass p i
+                                         sequence_ $ do save <- mbSave
+                                                        return $ save i iname ind clz
+                                         return $ LearnDataEntry (cs, clz)
 
 
 -----------------------------------------------------------------------------

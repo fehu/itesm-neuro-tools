@@ -37,7 +37,11 @@ import Vision.Image.Grey.Type
 import qualified Codec.Picture as P
 import Vision.Image.JuicyPixels (toFridayRGB)
 
+import System.FilePath
+
 import Data.Word
+
+import Control.Arrow
 
 -----------------------------------------------------------------------------
 
@@ -68,7 +72,8 @@ instance PixelToVec GreyPixel where pix2vec (GreyPixel p) = p +: VNil
 -----------------------------------------------------------------------------
 
 readImage imgPath = do img' <- P.readImage imgPath
-                       return $ fmap (toFridayRGB . P.convertRGB8) img'
+                       let name = takeFileName imgPath
+                       return $ fmap ((toFridayRGB . P.convertRGB8) &&& const name) img'
 
 
 -----------------------------------------------------------------------------

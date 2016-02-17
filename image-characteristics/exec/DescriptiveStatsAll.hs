@@ -14,6 +14,14 @@ import ImgCharacteristics.Friday
 import ImgCharacteristics.GTK.FromFriday
 
 import Vision.Image (RGB, HSV, Grey)
+import Vision.Image.JuicyPixels
+import Codec.Picture
+
+import Data.Time
+import Data.Time.Format
+
+import System.FilePath
+import System.Directory
 
 data WildfireClass = Fire
                    | Smoke
@@ -46,7 +54,18 @@ main = do ci <- classProvider :: IO (ClassesInterview RGB WildfireClass)
               e1 = eRGB `combineExtractors` eHSV
               e2 = e1 `combineExtractors` eGrey
 
-          main' ci e2
+          time <- getCurrentTime
+          let reportsDir = "reports/" ++ formatTime defaultTimeLocale "%F_%T" time
+
+              save :: RGB -> String -> (Int,Int) -> WildfireClass -> IO()
+              save img nme (row,col) c = let (name, ext) = splitExtension nme
+                                             filename = name ++ "_" ++ show row ++ "-" ++ show col
+                                                             ++ "_" ++ show c ++ ext
+                                            in writePng (reportsDir ++ "/" ++ filename) $ toJuicyRGB img
+
+          createDirectoryIfMissing True reportsDir
+
+          main' (Just save) ci e2
 
 
 

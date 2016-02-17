@@ -22,7 +22,7 @@ instance RegionsExtractor HSV where foreachRegion   = fixedColRowRegions fixedRe
                                     foreachRegionIO = fixedColRowRegions fixedRegions
 
 main = do ci <- classProvider :: IO (ClassesInterview HSV Bool)
-          main' ci (extractorHSV descriptiveStats)
+          main' Nothing ci (extractorHSV descriptiveStats)
 
 
 

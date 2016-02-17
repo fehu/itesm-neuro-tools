@@ -22,7 +22,7 @@ instance RegionsExtractor RGB where foreachRegion   = fixedColRowRegions fixedRe
                                     foreachRegionIO = fixedColRowRegions fixedRegions
 
 main = do ci <- classProvider :: IO (ClassesInterview RGB Bool)
-          main' ci (extractorRGB descriptiveStats)
+          main' Nothing ci (extractorRGB descriptiveStats)
 
 
 

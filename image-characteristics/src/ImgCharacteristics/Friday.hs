@@ -68,7 +68,7 @@ fixedColRowRegions rd img f =
 
        let region = Rect ((col-1)*x) ((row-1)*y) x y
        let img' = crop region img
-       return $ f img'
+       return $ f img' (row, col)
 
     where ((x, y), nRow, nCol) = finalSize rd img
 

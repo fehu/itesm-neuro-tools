@@ -28,6 +28,7 @@ import System.FilePath
 import Data.Either
 import Data.List (intercalate)
 import Control.Monad
+import Control.Arrow
 
 import Vision.Image (convert, RGB, Convertible)
 
@@ -42,28 +43,29 @@ main' :: ( Num num
          , Convertible RGB img
          )
       =>
-           ClassesInterview img class'
+           Maybe (img -> String -> (Int,Int) -> class' -> IO())
+        -> ClassesInterview img class'
         -> CharacteristicsExtractor img num l
         -> IO ()
-main' ci ce = getArgs >>= parseArgs' ci ce
+main' mbSave ci ce = getArgs >>= parseArgs' mbSave ci ce
 
 
-parseArgs' ci ce []     = showHelp >> exitFailure
-parseArgs' ci ce ["-h"] = showHelp >> exitSuccess
-parseArgs' ci ce [_]    = showHelp >> exitFailure
-parseArgs' ci ce [_, _] = showHelp >> exitFailure
+parseArgs' _ ci ce []     = showHelp >> exitFailure
+parseArgs' _ ci ce ["-h"] = showHelp >> exitSuccess
+parseArgs' _ ci ce [_]    = showHelp >> exitFailure
+parseArgs' _ ci ce [_, _] = showHelp >> exitFailure
 
-parseArgs' ci ce ["--dir", dir, relName, target] = do
+parseArgs' mbSave ci ce ["--dir", dir, relName, target] = do
     imgs' <- listDirectory dir
     let imgs = map (dir </>) imgs'
-    collectImagesCharacteristics ci ce relName imgs target
+    collectImagesCharacteristics ci ce relName imgs target mbSave
 
-parseArgs' ci ce args = do
+parseArgs' mbSave ci ce args = do
     let target = last args
     let t' = init args
     let relName = last t'
     let imgs = init t'
-    collectImagesCharacteristics ci ce relName imgs target
+    collectImagesCharacteristics ci ce relName imgs target mbSave
 
 
 -----------------------------------------------------------------------------
@@ -76,14 +78,14 @@ listDirectory path =
 
 
 
-collectImagesCharacteristics ci ce relName imgPaths target = do
+collectImagesCharacteristics ci ce relName imgPaths target mbSave = do
     imgs' <- mapM readImage imgPaths
 
     let (failed, imgs) = partitionEithers imgs'
 
     forM_ failed putStrLn
 
-    cs <- collectCharacteristics ci ce $ map convert imgs
+    cs <- collectCharacteristics ci ce mbSave $ map (first convert) imgs
 
     let !weka = learnDataToWeka (characteristicsNames ce) [minBound..maxBound] cs
 
@@ -93,9 +95,9 @@ collectImagesCharacteristics ci ce relName imgPaths target = do
 
 
 
-collectCharacteristics ci ce imgs
+collectCharacteristics ci ce mbSave imgs
     | null imgs = error "Nothing to do: no images provided"
-    | otherwise = fmap concat . sequence $ map (extractLearnData ci ce) imgs
+    | otherwise = fmap concat . sequence $ map (uncurry $ extractLearnData ci ce mbSave) imgs
 
 
 -----------------------------------------------------------------------------
