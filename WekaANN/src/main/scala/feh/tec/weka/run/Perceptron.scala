@@ -1,7 +1,7 @@
 package feh.tec.weka.run
 
 import java.text.DateFormat
-import java.util.Date
+import java.util.{UUID, Date}
 
 import feh.tec.weka.{EvaluationResult, PrepareInstances, MultilayerPerceptronCrossValidation}
 import feh.util._
@@ -32,11 +32,11 @@ object Perceptron extends App{
 
   val setArgs = group(setArgs_).mapValues(_.ensuring(_.size == 1).head)
 
-  println("args = " + args.toList)
+//  println("args = " + args.toList)
 
-  println("singleArgs = " + singleArgs)
-  println("neuroOpts =  " + neuroOpts)
-  println("setArgs =  " + setArgs)
+//  println("singleArgs = " + singleArgs)
+//  println("neuroOpts =  " + neuroOpts)
+//  println("setArgs =  " + setArgs)
 
 
   val dataFile = singleArgs.head.toFile
@@ -74,18 +74,18 @@ object Perceptron extends App{
       }
 
     def extractEvaluationResult = {
-      val filename = DateFormat.getDateTimeInstance.format(time)
+      val filename = DateFormat.getDateTimeInstance.format(time) + UUID.randomUUID()
       val file = (reportsDir.getPath / filename).file
 
       def write = {
         str: String =>
-          val res = EvaluationResult.writeToFile(file)(str)
+          EvaluationResult.writeToFile(file)(str)
+          file.withOutputStream(File.write.utf8("\n\n-- command args: " + args.mkString(" ")), append = true)
           println("wrote report to " + file.getPath)
 //          val latest = (reportsDir.getPath / "latest").file
 //          val s = s"""ln -s "${file.getPath}" "${latest.getPath}""""
 //          println(s)
 //          sys.runtime.exec(s).waitFor()
-          res
       }
 
       write compose EvaluationResult.fullSummary
