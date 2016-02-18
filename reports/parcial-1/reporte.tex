@@ -225,8 +225,14 @@ Las demás dependencias deben ser resueltas por CABAL sin problemas.
 
 Para automatizar el proceso de aprendizaje del perceptron, fue creado un pequeño proyecto en Scala. Se aprovecha la facilidad de conexión de aplicaciones de JMV para correr las \emph{evaluaciones} de Weka.
 
-La ejecutable prepara los datos, removiendo las instancias marcadas con la clase \verb|Ignore|.
+\begin{itemize}
+\item Prepara los datos, removiendo las instancias marcadas con la clase 
+    \verb|Ignore|.
+\item Guarda los reportes de Weka en archivos (por defecto en directorio ``reports'').
+\end{itemize}
 
+\medskip
+Se pre
 
 
 \end{document}
