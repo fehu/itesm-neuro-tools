@@ -3,7 +3,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[spanish, mexico]{babel}
 \usepackage[export]{adjustbox}
-\usepackage{hyperref, amsmath, xcolor, mdframed, listings, tikz, enumitem}
+\usepackage{hyperref, amsmath, xcolor, mdframed, listings, tikz, enumitem,
+			subcaption}
 \usetikzlibrary{shapes, arrows, chains, fit, calc} 
 
 \usepackage{showframe}
@@ -260,7 +261,7 @@ Fueron realizados experimentos con todas las combinaciones de las siguientes val
 Variable 					& Valores				\\
 \hline
 Número de épocas			& 500, 1000, 2000, 3000 \\
-``Learning rate ''  		& 0.1, 0.2, 0.5, 0.8 	\\
+``Learning rate''  	    	& 0.1, 0.2, 0.5, 0.8 	\\
 ``Momentum''				& 0.2, 0.5, 0.8 		\\
 $1^{\text{ra}}$ capa oculta	& a, t					\\
 $2^{\text{da}}$ capa oculta	& 0, a, t				\\
@@ -321,54 +322,8 @@ el conjunto de valores $\{p_{xy}\}$, tales que
 El operador $op$ puede ser el \emph{promedio}, o valor \emph{máximo/mínimo}, 
 o otra función con tipo $\{z\} \mapsto z$.
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.49\textwidth]{plots/cmean_NL.png}
-	\includegraphics[width=0.49\textwidth]{plots/cmax_NL.png}
-	\caption{La proyección del \emph{número de épocas} utilizado y el \emph{``learning rate''} 
-			 sobre la \textbf{media} (izquierda) y el \textbf{máximo} (derecha)
-			 del \emph{número de instancias correctamente clasificadas}. 
-			}
-	\label{NL}
-\end{figure}
 
-
-\begin{figure}[h] 
-	\centering
-	\includegraphics[width=0.49\textwidth]{plots/cmean_NM.png}
-	\includegraphics[width=0.49\textwidth]{plots/cmax_NM.png}
-	\caption{La proyección del \emph{número de épocas} utilizado y el \emph{``momentum''} 
-			 sobre la \textbf{media} (izquierda) y el \textbf{máximo} (derecha)
-			 del \emph{número de instancias correctamente clasificadas}. 
-			}
-	\label{NM}
-\end{figure}
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.49\textwidth]{plots/cmean_NH.png}
-	\includegraphics[width=0.49\textwidth]{plots/cmax_NH.png}
-	\caption{La proyección del \emph{número de épocas} utilizado y la
-			 \emph{configuración de las capas escondidas} 
-			 sobre la \textbf{media} (izquierda) y el \textbf{máximo} (derecha)
-			 del \emph{número de instancias correctamente clasificadas}. 
-			}
-	\label{NHc}
-\end{figure}
-	
-\begin{figure}[h] 
-	\centering
-	\includegraphics[width=0.49\textwidth]{plots/emean_NH.png}
-	\includegraphics[width=0.49\textwidth]{plots/emin_NH.png}
-	\caption{La proyección del \emph{número de épocas} utilizado y la
-			 \emph{configuración de las capas escondidas} 
-			 sobre la \textbf{media} (izquierda) y el \textbf{mínimo} (derecha)
-			 de la \emph{error cuadrática media}. 
-			}
-	\label{NHe}
-\end{figure}	
-
-
+\input{figures_ch6} % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
 Se puede ver en la figura \ref{NL} \red{espera todos los datos}.
 
