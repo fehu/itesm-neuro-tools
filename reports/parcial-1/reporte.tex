@@ -43,7 +43,7 @@
         $1^\text{er}$ parcial: reporte % babel shorthands don't work in macros.
         \\[1em]
         }
-\author{ \vspace*{\fill} \red{ Personal Data} \qquad\small \red{Axxxxxxxx} \\[1em] }
+\author{ \vspace*{\fill} ---- \qquad\small ---- \\[1em] }
 
 \date{ \vspace*{\fill} \today, Puebla.}
 
@@ -71,9 +71,11 @@
 \def\Nat{run:./docs/Nat/frames.html}
 \def\WekaData{run:./docs/WekaData/frames.html}
 
+\def\WekaANN{run:./docs/WekaANN/index.html}
+
 \section{Base de imágenes}
 
-Se seleccionaron 42 imágenes de bosques \underline{con resoluciones diferentes}, 36 de las cuales contienen incendios forestales. Seis mas no contienen ningún signo de fuego, y tres de ellas presentan un bosque en otoño con las hojas de color. Las imágenes se adjuntan en archivo \textit{images.zip}.
+Se seleccionaron 42 imágenes de bosques \underline{con resoluciones diferentes}, 36 de las cuales contienen incendios forestales. Seis mas no contienen ningún signo de fuego, y tres de ellas presentan un bosque en otoño con las hojas de color. Las imágenes se adjuntan en archivo \textit{wildfire.zip}.
 
 \begin{note}
 La partición de imágenes en regiones se adapta al tamaño de la imagen, lo que permite recibir regiones con desviaciones de tamaño reducidas. Ademas, el vector de características se forma por los valores estadísticos de la región, los cuales no están afectados por la diferencia en el tamaño de la muestra.
@@ -192,7 +194,7 @@ Las instancias etiquetadas con \verb|Ignore| están a la espera de ser removidos
 
 \subsection{Formato ARFF}
 
-Para la escritura de los datos se utiliza el proyecto \refcode{\WekaData}{WekaData}; el código fuente se incluye en el archivo \verb|WekaData.zip|.
+Para la escritura de los datos se utiliza el proyecto \refcode{\WekaData}{WekaData}; el código fuente se incluye en la carpeta \verb|sources|.
 
 Los adaptadores entre \verb|LearnDataEntry| y \verb|WekaEntry| se encuentran en\\ \refcode{\Weka}{src/ImgCharacteristics/Weka.hs}.
 
@@ -228,7 +230,7 @@ Las demás dependencias deben ser resueltas por CABAL sin problemas.
 
 \section{Experimentos en Weka}
 
-Para automatizar el proceso de aprendizaje del perceptron, fue creado un pequeño proyecto en Scala. Se aprovecha la facilidad de conexión de aplicaciones de JMV para correr las \emph{evaluaciones} de Weka.
+Para automatizar el proceso de aprendizaje del perceptron, fue creado un pequeño proyecto en Scala \refcode{\WekaANN}{WekaANN}. Se aprovecha la facilidad de conexión de aplicaciones de JMV para correr las \emph{evaluaciones} de Weka.
 
 \begin{itemize}
 \item Prepara los datos, removiendo las instancias marcadas con la clase 
