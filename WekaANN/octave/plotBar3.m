@@ -1,5 +1,5 @@
 function [pp, Zs]=plotBar3(M, xInd, xLabel, yInd, yLabel, zInd, zLabel, ...
-                           selFunc) % pName
+                           selFunc, useLogScale=false) % pName
 
   X = unique(M{xInd});
   Y = unique(M{yInd});
@@ -29,8 +29,17 @@ function [pp, Zs]=plotBar3(M, xInd, xLabel, yInd, yLabel, zInd, zLabel, ...
     end
   end
   
-  axes('yticklabel', X, 'xticklabel', Y, ...
-       'ylabel', xLabel, 'xlabel', yLabel, 'zlabel', zLabel);
+  a = axes('yticklabel', X, 'xticklabel', Y, ...
+           'ylabel', xLabel, 'xlabel', yLabel, 'zlabel', zLabel);
+
+  
+  if useLogScale
+    pr = output_precision;
+    output_precision(2);
+    
+    lz = linspace(min(min(Zs)), max(max(Zs)), 10);
+    set(a, 'zscale', 'log', 'ztick', lz);
+  end
   
   grid on;
 
@@ -38,11 +47,13 @@ function [pp, Zs]=plotBar3(M, xInd, xLabel, yInd, yLabel, zInd, zLabel, ...
   
   axis tight; view(50,25);
   
-%  title(pName);
+  if useLogScale, output_precision(pr); end
+  
+  colors = repmat(1:length(X), 1, length(Y));
   
   % 6 faces per bar
-%  fvcd = kron((1:numel(Zs))', ones(6,1));
-%  set(pp, 'FaceVertexCData',fvcd, 'FaceColor','flat', 'CDataMapping','scaled')
+  fvcd = kron(colors', ones(6,1));
+  set(pp, 'FaceVertexCData',fvcd, 'FaceColor','flat', 'CDataMapping','scaled')
 
 %  colormap hsv;
 %  set(pp, 'FaceAlpha',0.85)   % semi-transparent bars

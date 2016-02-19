@@ -1,4 +1,4 @@
-function doPlots(reportsFile)
+function doPlots(reportsFile,useLogScale=false)
 
 M = readReport(reportsFile);
 %M = csvread(reportsFile);
@@ -9,24 +9,24 @@ figure
 plotBar3(M, 1, "learning rate", ...
             2, "# of epochs",
             6, "Correctly Classified Instances (mean)", ...
-            @(x)(mean(x)));
+            @(x)(mean(x)), useLogScale);
 figure
 plotBar3(M, 1, "learning rate", ...
             2, "# of epochs",
             6, "Correctly Classified Instances (max)", ...
-            @(x)(max(x)));
+            @(x)(max(x)), useLogScale);
 
 
 figure
 plotBar3(M, 1, "learning rate", ...
             2, "# of epochs",
             4, "Root mean squared error (mean)", ...
-            @(x)(mean(x)));
+            @(x)(mean(x)), useLogScale);
 figure
 plotBar3(M, 1, "learning rate", ...
             2, "# of epochs",
             4, "Root mean squared error (min)", ...
-            @(x)(min(x)));
+            @(x)(min(x)), useLogScale);
 
 
 input('press ENTER to proceed');
@@ -36,24 +36,24 @@ figure
 plotBar3(M, 3, "momentum", ...
             2, "# of epochs",
             6, "Correctly Classified Instances (mean)", ...
-            @(x)(mean(x)));
+            @(x)(mean(x)), useLogScale);
 figure
 plotBar3(M, 3, "momentum", ...
             2, "# of epochs",
             6, "Correctly Classified Instances (max)", ...
-            @(x)(max(x)));
+            @(x)(max(x)), useLogScale);
 
 
 figure
 plotBar3(M, 3, "momentum", ...
             2, "# of epochs",
             4, "Root mean squared error (mean)", ...
-            @(x)(mean(x)));
+            @(x)(mean(x)), useLogScale);
 figure
 plotBar3(M, 3, "momentum", ...
             2, "# of epochs",
             4, "Root mean squared error (min)", ...
-            @(x)(min(x)));
+            @(x)(min(x)), useLogScale);
 
 
 input('press ENTER to proceed');
@@ -63,24 +63,24 @@ figure
 plotBar3(M, 5, "hidden layers", ...
             2, "# of epochs",
             6, "Correctly Classified Instances (mean)", ...
-            @(x)(mean(x)));
+            @(x)(mean(x)), useLogScale);
 figure
 plotBar3(M, 5, "hidden layers", ...
             2, "# of epochs",
             6, "Correctly Classified Instances (max)", ...
-            @(x)(max(x)));
+            @(x)(max(x)), useLogScale);
 
 
 figure
 plotBar3(M, 5, "hidden layers", ...
             2, "# of epochs",
             4, "Root mean squared error (mean)", ...
-            @(x)(mean(x)));
+            @(x)(mean(x)), useLogScale);
 figure
 plotBar3(M, 5, "hidden layers", ...
             2, "# of epochs",
             4, "Root mean squared error (min)", ...
-            @(x)(min(x)));
+            @(x)(min(x)), useLogScale);
 
 
 end
