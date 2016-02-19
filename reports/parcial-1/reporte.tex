@@ -6,7 +6,7 @@
 \usepackage{hyperref, amsmath, xcolor, mdframed, listings, tikz, enumitem}
 \usetikzlibrary{shapes, arrows, chains, fit, calc} 
 
-%\usepackage{showframe}
+\usepackage{showframe}
 
 
 \newcommand{\crule}[2][1pt]
@@ -28,6 +28,11 @@
         \textbf{Nota}\\}
     {\end{mdframed}}
     
+
+% http://tex.stackexchange.com/questions/68547/alignment-across-nested-aligned-environments
+%\newlength{\myleftlen}
+%\newcommand{\setmyleftlen}[1]{\settowidth{\myleftlen}{\( \displaystyle#1\)}}
+%\newcommand{\backup}{\hskip-\myleftlen\mkern-7mu}
 
 
 
@@ -232,8 +237,144 @@ Para automatizar el proceso de aprendizaje del perceptron, fue creado un pequeñ
 \end{itemize}
 
 \medskip
-Se pre
+En directorio del proyecto \emph{scripts} se encuentran programas:
+\begin{enumerate}
+\item \verb|bulkANN.scala| --- fue utilizado para prueba de configuraciones diferentes.
+\item \verb|findBestReports.scala| --- selecciona los mejores reportes (por el porcentaje de clasificación correcta).
+\item \verb|extractReportsInfo.scala| --- extrae estadísticos desde los reportes y los escribe en archivo.
+\end{enumerate}
+
+\medskip
+En directorio \verb|octave| se encuentran diferentes utilidades para graficar los comparaciones de los resultados (para Matlab/Octave).
+
+\subsection{Configuraciones de la red}
+
+Fueron realizados experimentos con todas las combinaciones de las siguientes valores:
+
+\begin{center}
+\begin{tabular}{l}
+\begin{tabular}{|l|l|}
+\hline
+Variable 					& Valores				\\
+\hline
+Número de épocas			& 500, 1000, 2000, 3000 \\
+``Learning rate ''  		& 0.1, 0.2, 0.5, 0.8 	\\
+``Momentum''				& 0.2, 0.5, 0.8 		\\
+$1^{\text{ra}}$ capa oculta	& a, t					\\
+$2^{\text{da}}$ capa oculta	& 0, a, t				\\
+\hline
+\end{tabular}\\
+\textbf{Total:} 288 combinaciones.
+\end{tabular}
+\end{center}
+
+$t=\text{núm. de classes} + \text{núm. de attributos} = 56+5=61; a=\dfrac{t}{2}=30$.
+
+%Inicialmente se planeaba hacer pruebas con las combinaciones de las siguientes configuraciones:
 
 
+\section{Análisis de resultados}
+
+%Fueron recolectadas las estadísticas de las evaluaciones por Weka.
+Los mejores resultados fueron demostrados por las \red{siguientes} configuraciones:
+
+\begin{center}
+\begin{tabular}{|l|l|l|l|l|l|l|}
+\hline
+\# épocas & learn. & momenum & $1^{\text{ra}}$ capa & $2^{\text{da}}$ capa & \# correctos & error \\
+\hline
+\red{?} & \red{?} & \red{?} & \red{?} & \red{?} & \red{?} & \red{?} \\
+\hline
+\end{tabular}
+\end{center}
+
+
+Para analizar la influencia de diferentes variables sobre la calidad de aprendizaje,
+fueron graficados unas proyecciones, los cuales parecen a una histograma, de siguiente manera:
+
+\begin{flalign*}
+\text{Sean } &C={c_i} \text{ --- las variables configurables.}\\
+			 &E={e_i} \text{ --- las estadísticas para las configuraciones.}\\
+			 &D={d_j} \text{ --- los arreglos de configuraciones, tales que}\\
+			 &\qquad\begin{aligned}
+			 	\forall d_j &\in D  \\
+			 	& \forall c_i \in C ~ \exists \text{ un valor } d^c_{ij}
+			 		\text{ asociado -- el valor de la variable } c_i\\
+			 	&	\qquad \text{ en la configuración } d_j;\\
+			 	&\forall e_i \in E ~ \exists \text{ un valor } d^e_{ij}
+			 		\text{ asociado -- el valor de la estadística } e_i\\
+			 	&	\qquad \text{ en la configuración } d_j.
+			 \end{aligned}\\
+\end{flalign*}
+Una proyección de variables $X,Y \in C$ sobre la estadística $Z \in E$ con operador $op$ es
+el conjunto de valores $\{p_{xy}\}$, tales que
+\begin{flalign*}
+& \forall \text{ único } x \in \text{ valores de } X \\
+& \forall \text{ único } y \in \text{ valores de } Y \\
+& p_{xy} = op(\{z_{xy}\}) \text{, donde} \\
+& \{z_{xy}\} = \left\lbrace d^e_{Zj} ~|~ \forall d_j \in D
+	\textbf{ si } d^c_{Xk} = x \wedge d^Y_{Yk} = y \right\rbrace\\		
+\end{flalign*}
+
+El operador $op$ puede ser el \emph{promedio}, o valor \emph{máximo/mínimo}, 
+o otra función con tipo $\{z\} \mapsto z$.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.49\textwidth]{plots/cmean_NL.png}
+	\includegraphics[width=0.49\textwidth]{plots/cmax_NL.png}
+	\caption{La proyección del \emph{número de épocas} utilizado y el \emph{``learning rate''} 
+			 sobre la \textbf{media} (izquierda) y el \textbf{máximo} (derecha)
+			 del \emph{número de instancias correctamente clasificadas}. 
+			}
+	\label{NL}
+\end{figure}
+
+
+\begin{figure}[h] 
+	\centering
+	\includegraphics[width=0.49\textwidth]{plots/cmean_NM.png}
+	\includegraphics[width=0.49\textwidth]{plots/cmax_NM.png}
+	\caption{La proyección del \emph{número de épocas} utilizado y el \emph{``momentum''} 
+			 sobre la \textbf{media} (izquierda) y el \textbf{máximo} (derecha)
+			 del \emph{número de instancias correctamente clasificadas}. 
+			}
+	\label{NM}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.49\textwidth]{plots/cmean_NH.png}
+	\includegraphics[width=0.49\textwidth]{plots/cmax_NH.png}
+	\caption{La proyección del \emph{número de épocas} utilizado y la
+			 \emph{configuración de las capas escondidas} 
+			 sobre la \textbf{media} (izquierda) y el \textbf{máximo} (derecha)
+			 del \emph{número de instancias correctamente clasificadas}. 
+			}
+	\label{NHc}
+\end{figure}
+	
+\begin{figure}[h] 
+	\centering
+	\includegraphics[width=0.49\textwidth]{plots/emean_NH.png}
+	\includegraphics[width=0.49\textwidth]{plots/emin_NH.png}
+	\caption{La proyección del \emph{número de épocas} utilizado y la
+			 \emph{configuración de las capas escondidas} 
+			 sobre la \textbf{media} (izquierda) y el \textbf{mínimo} (derecha)
+			 de la \emph{error cuadrática media}. 
+			}
+	\label{NHe}
+\end{figure}	
+
+
+
+Se puede ver en la figura \ref{NL} \red{espera todos los datos}.
+
+Se puede ver en la figura \ref{NM} \red{espera todos los datos}.
+
+Se puede ver en la figura \ref{NHc} \red{espera todos los datos}.
+
+Se puede ver que los gráficos en la figura \ref{NHe} es una reflexión \red{(mirror image)} de los gráficos en la figura \ref{NHc}.  \red{Espera todos los datos}.
+			 
 \end{document}
 
