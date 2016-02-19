@@ -31,6 +31,9 @@ function [pp, Zs]=plotBar3(M, xInd, xLabel, yInd, yLabel, zInd, zLabel, ...
   
   axes('yticklabel', X, 'xticklabel', Y, ...
        'ylabel', xLabel, 'xlabel', yLabel, 'zlabel', zLabel);
+  
+  grid on;
+
   pp=bar3(Zs);
   
   axis tight; view(50,25);
