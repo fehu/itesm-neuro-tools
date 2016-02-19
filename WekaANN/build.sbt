@@ -14,3 +14,6 @@ unmanagedClasspath in Runtime += wekaJar
 resolvers += "Fehu's github repo" at "http://fehu.github.io/repo"
 
 libraryDependencies += "feh.util" %% "util" % "1.0.9-SNAPSHOT"
+
+scalacOptions in (Compile, doc) +=
+  "-doc-source-url https://github.com/fehu/itesm-neuro-tools/blob/master/WekaANN/src/main/scala/€{TPL_OWNER}.€{TPL_NAME}.scala"
