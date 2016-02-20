@@ -18,8 +18,7 @@ fixedRegions = FixedColRowRegions{ rRow = 5
                                  , minRegionSize = (200, 200)
                                  }           -- (height, width)
 
-instance RegionsExtractor HSV where foreachRegion   = fixedColRowRegions fixedRegions
-                                    foreachRegionIO = fixedColRowRegions fixedRegions
+instance RegionsExtractor HSV where foreachRegion = fixedColRowRegions fixedRegions
 
 main = do ci <- classProvider :: IO (ClassesInterview HSV Bool)
           main' Nothing ci (extractorHSV descriptiveStats)

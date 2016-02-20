@@ -67,10 +67,8 @@ characteristicsFromVec v = CharacteristicsExtractor cs names
 -----------------------------------------------------------------------------
 
 type ForeachRegion   img = forall a . img -> (img -> (Int, Int) -> a) -> [a]
-type ForeachRegionIO img = forall a . img -> (img -> (Int, Int) -> IO a) -> IO [a]
 
 class RegionsExtractor img where foreachRegion   :: ForeachRegion img
-                                 foreachRegionIO :: ForeachRegion img
 
 data FixedColRowRegions = FixedColRowRegions { rRow          :: Int
                                              , rCol          :: Int
@@ -109,7 +107,7 @@ extractLearnData :: ( Num num
                  -> img
                  -> String -- ^ image name
                  -> IO [LearnDataEntry l num class']
-extractLearnData p ce mbSave img iname = sequence $ foreachRegionIO img
+extractLearnData p ce mbSave img iname = sequence $ foreachRegion img
                           $ \i ind -> do let !cs = strictVec $ characteristics ce i
                                          clz <- regionClass p i
                                          sequence_ $ do save <- mbSave

@@ -18,8 +18,7 @@ fixedRegions = FixedColRowRegions{ rRow = 5
                                  , minRegionSize = (200, 200)
                                  }           -- (height, width)
 
-instance RegionsExtractor RGB where foreachRegion   = fixedColRowRegions fixedRegions
-                                    foreachRegionIO = fixedColRowRegions fixedRegions
+instance RegionsExtractor RGB where foreachRegion = fixedColRowRegions fixedRegions
 
 main = do ci <- classProvider :: IO (ClassesInterview RGB Bool)
           main' Nothing ci (extractorRGB descriptiveStats)

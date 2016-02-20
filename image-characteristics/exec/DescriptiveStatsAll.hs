@@ -41,8 +41,7 @@ fixedRegions = FixedColRowRegions{ rRow = 50
                                  , minRegionSize = (100, 100)
                                  }           -- (height, width)
 
-instance RegionsExtractor RGB where foreachRegion   = fixedColRowRegions fixedRegions
-                                    foreachRegionIO = fixedColRowRegions fixedRegions
+instance RegionsExtractor RGB where foreachRegion = fixedColRowRegions fixedRegions
 
 main = do ci <- classProvider :: IO (ClassesInterview RGB WildfireClass)
 
