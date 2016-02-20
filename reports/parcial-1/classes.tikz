@@ -1,0 +1,38 @@
+\begin{tikzpicture}[>=triangle 60]
+\tikzset{
+  class/.style={on grid, align=center, minimum height=4ex,text width=6em,
+                     draw, circle}
+  };
+
+\def\r{7}
+
+\node[class] (F)  at (0,0)    {\textbf{Fire}       \\ 200 de 298 $\approx \mathbf{67\%}$};
+\node[class] (S)  at (0,-\r)  {\textbf{Smoke}      \\ 407 de 518 $\approx \mathbf{79\%}$};
+\node[class] (FS) at (\r,0)   {\textbf{Fire\&Smoke}\\ 132 de 249 $\approx \mathbf{54\%}$};
+\node[class] (N)  at (\r,-\r) {\textbf{Neither}    \\ 748 de 834 $\approx \mathbf{90\%}$};
+
+\begin{scope}[draw=red, text=red]
+\draw (F) edge[->, bend right] node[label=left:{$3\%$}]{}  (S);
+\draw (F) edge[->, bend left, line width=2pt] node[label=above:{$16\%$}]{}  (FS);
+\draw (F) edge[->, bend right, line width=2pt] node[label=left:{$14\%$}]{}  (N);
+\end{scope}
+
+\begin{scope}[draw=darkgray, text=darkgray]
+\draw (S) edge[->, bend right] node[label=left:{$2\%$}]{}  (F);
+\draw (S) edge[->, bend left, line width=1pt] node[label=above:{$6\%$}]{}  (FS);
+\draw (S) edge[->, bend right, line width=2pt] node[label=below:{$14\%$}]{}  (N);
+\end{scope}
+
+\begin{scope}[draw=orange, text=orange]
+\draw (FS) edge[->, bend left, line width=3pt] node[label=above:{$22\%$}]{}  (F);
+\draw (FS) edge[->, bend left, line width=2pt] node[label=above:{$16\%$}]{}  (S);
+\draw (FS) edge[->, bend left, line width=0.5pt] node[label=right:{$9\%$}]{}  (N);
+\end{scope}
+
+\begin{scope}[draw=blue, text=blue]
+\draw (N) edge[->, bend right] node[label=above:{$3\%$}]{}  (F);
+\draw (N) edge[->, bend right, line width=1pt] node[label=above:{$6\%$}]{}  (S);
+\draw (N) edge[->, bend left] node[label=right:{$1\%$}]{}  (FS);
+\end{scope}
+
+\end{tikzpicture}

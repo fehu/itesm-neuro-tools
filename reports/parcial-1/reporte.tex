@@ -3,11 +3,12 @@
 \usepackage[utf8]{inputenc}
 \usepackage[spanish, mexico]{babel}
 \usepackage[export]{adjustbox}
-\usepackage{hyperref, amsmath, xcolor, mdframed, listings, tikz, enumitem,
+\usepackage[shortlabels]{enumitem}
+\usepackage{hyperref, amsmath, xcolor, mdframed, listings, tikz,
 			subcaption}
 \usetikzlibrary{shapes, arrows, chains, fit, calc} 
 
-\usepackage{showframe}
+%\usepackage{showframe}
 
 
 \newcommand{\crule}[2][1pt]
@@ -30,10 +31,6 @@
     {\end{mdframed}}
     
 
-% http://tex.stackexchange.com/questions/68547/alignment-across-nested-aligned-environments
-%\newlength{\myleftlen}
-%\newcommand{\setmyleftlen}[1]{\settowidth{\myleftlen}{\( \displaystyle#1\)}}
-%\newcommand{\backup}{\hskip-\myleftlen\mkern-7mu}
 
 
 
@@ -240,19 +237,19 @@ Para automatizar el proceso de aprendizaje del perceptron, fue creado un pequeñ
 \end{itemize}
 
 \medskip
-En directorio del proyecto \emph{scripts} se encuentran programas:
+En el directorio del proyecto \emph{scripts} se encuentran estos programas:
 \begin{enumerate}
 \item \verb|bulkANN.scala| --- fue utilizado para prueba de configuraciones diferentes.
 \item \verb|findBestReports.scala| --- selecciona los mejores reportes (por el porcentaje de clasificación correcta).
-\item \verb|extractReportsInfo.scala| --- extrae estadísticos desde los reportes y los escribe en archivo.
+\item \verb|extractReportsInfo.scala| --- extrae estadísticas desde los reportes y las escribe en un archivo.
 \end{enumerate}
 
 \medskip
-En directorio \verb|octave| se encuentran diferentes utilidades para graficar los comparaciones de los resultados (para Matlab/Octave).
+En el directorio \verb|octave| se encuentran diferentes utilidades para graficar los comparaciones de los resultados (para Matlab/Octave).
 
 \subsection{Configuraciones de la red}
 
-Fueron realizados experimentos con todas las combinaciones de las siguientes valores:
+Fueron realizados experimentos con todas las combinaciones de los siguientes valores:
 
 \begin{center}
 \begin{tabular}{l}
@@ -271,34 +268,60 @@ $2^{\text{da}}$ capa oculta	& 0, a, t				\\
 \end{tabular}
 \end{center}
 
-$t=\text{núm. de classes} + \text{núm. de attributos} = 56+5=61; a=\dfrac{t}{2}=30$.
+\def\valT{61}
+\def\valA{30}
+
+$t=\text{núm. de classes} + \text{núm. de attributos} = 56+5=\valT; a=\dfrac{t}{2}=\valA$.
 
 %Inicialmente se planeaba hacer pruebas con las combinaciones de las siguientes configuraciones:
 
 
 \section{Análisis de resultados}
 
-%Fueron recolectadas las estadísticas de las evaluaciones por Weka.
-Los mejores resultados fueron demostrados por las \red{siguientes} configuraciones:
-
-\begin{center}
-\begin{tabular}{|l|l|l|l|l|l|l|}
+\begin{table}
+\begin{tabular}{|l||l|l|l|l|l||l|l|}
 \hline
-\# épocas & learn. & momenum & $1^{\text{ra}}$ capa & $2^{\text{da}}$ capa & \# correctos & error \\
+\# & épocas & learn. & mom. & capa 1 & capa 2 & clasificado & rel. abs. err. \\
 \hline
-\red{?} & \red{?} & \red{?} & \red{?} & \red{?} & \red{?} & \red{?} \\
+ 1& 500    & 0.1    & 0.5    & t    & a    & 78.3044 \%  & 32.4691 \% \\
+ 2& 500    & 0.1    & 0.5    & t    & t    & 78.1464 \%  & 32.8638 \% \\
+ 3& 3000   & 0.1    & 0.2    & t    & a    & 78.0411 \%  & 32.1325 \% \\
+ 4& 3000   & 0.1    & 0.2    & t    &      & 77.8831 \%  & 34.6127 \% \\
+ 5& 1000   & 0.1    & 0.8    & t    & t    & 77.8304 \%  & 33.1316 \% \\
+ 6& 1000   & 0.1    & 0.2    & t    & a    & 77.7251 \%  & 33.4992 \% \\
+ 7& 1000   & 0.1    & 0.2    & t    &      & 77.7251 \%  & 35.4322 \% \\
+ 8& 3000   & 0.1    & 0.5    & t    &      & 77.6198 \%  & 34.8487 \% \\
+ 9& 1000   & 0.2    & 0.8    & t    & t    & 77.6198 \%  & 33.7434 \% \\
+10& 2000   & 0.5    & 0.2    & t    & t    & 77.6198 \%  & 33.8068 \% \\
 \hline
 \end{tabular}
-\end{center}
+\caption{Las configuraciones con los mejores resultados.}
+\label{table:results_best}
+\end{table}
 
+\begin{table}
+\begin{tabular}{|l||l|l|l|l|l||l|l|}
+\hline
+\# & épocas & learn. & mom. & capa 1 & capa 2 & clasificado & rel. abs. err. \\
+\hline
+ 1& 3000   & 0.8    & 0.8    & a    & t    & 11.743  \%   & 125.7089 \% \\
+ 2& 2000   & 0.8    & 0.8    & t    & t    & 15.3765 \%   & 120.8736 \% \\
+ 3& 1000   & 0.8    & 0.8    & t    & t    & 16.7983 \%   & 120.174  \% \\
+ 4& 3000   & 0.8    & 0.8    & t    & t    & 20.5898 \%   & 115.5593 \% \\
+ 5& 2000   & 0.8    & 0.8    & a    & t    & 22.9595 \%   & 111.3145 \% \\
+\hline
+\end{tabular}
+\caption{Las configuraciones con los peores resultados.}
+\label{table:results_worst}
+\end{table}
 
 Para analizar la influencia de diferentes variables sobre la calidad de aprendizaje,
 fueron graficados unas proyecciones, los cuales parecen a una histograma, de siguiente manera:
 
 \begin{flalign*}
-\text{Sean } &C={c_i} \text{ --- las variables configurables.}\\
-			 &E={e_i} \text{ --- las estadísticas para las configuraciones.}\\
-			 &D={d_j} \text{ --- los arreglos de configuraciones, tales que}\\
+\text{Sean } &C={c_i} \text{ --- variables configurables.}\\
+			 &E={e_i} \text{ --- estadísticas para las configuraciones.}\\
+			 &D={d_j} \text{ --- arreglos de configuraciones, tales que}\\
 			 &\qquad\begin{aligned}
 			 	\forall d_j &\in D  \\
 			 	& \forall c_i \in C ~ \exists \text{ un valor } d^c_{ij}
@@ -320,18 +343,107 @@ el conjunto de valores $\{p_{xy}\}$, tales que
 \end{flalign*}
 
 El operador $op$ puede ser el \emph{promedio}, o valor \emph{máximo/mínimo}, 
-o otra función con tipo $\{z\} \mapsto z$.
+u otra función con tipo $\{z\} \mapsto z$.
 
+\input{figures_ch6}
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
-\input{figures_ch6} % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+Se puede ver que los gráficos en la figura \ref{fig:NHe} son una reflexión de los gráficos en la figura \ref{fig:NHc}.
 
-Se puede ver en la figura \ref{NL} \red{espera todos los datos}.
+Pueden hacerse las siguientes conclusiones:
 
-Se puede ver en la figura \ref{NM} \red{espera todos los datos}.
+\subsection{Influencia de ``learning rate''}
+La calidad disminuye con el aumento del ``learning rate'' (figura \ref{fig:NL}). 
+Las 5 configuraciones, que mostraron los peores resultados (tabla \ref{table:results_worst}), todos tenían el l.r. máximo de las pruebas (0.8).
 
-Se puede ver en la figura \ref{NHc} \red{espera todos los datos}.
+\subsection{Influencia de ``momentum''}
+En la figura \ref{fig:NM} se puede ver que el mayor valor (0.8) del ``momentum''         
+produjo los peores resultados. La diferencia de los promedios para $0.5$ y $0.2$ está 
+ligeramente en favor del valor menor, mientras que los máximos son inconclusos.
 
-Se puede ver que los gráficos en la figura \ref{NHe} es una reflexión \red{(mirror image)} de los gráficos en la figura \ref{NHc}.  \red{Espera todos los datos}.
+\subsection{Influencia de la capa oculta}
+\begin{enumerate}[a).]
+\item Las 10 mejores configuraciones tenían $t=\dfrac{a}{2} = \valT$ neuronas en la primera 
+      capa. En las figuras \ref{fig:NHc}, \ref{fig:NHe} y tabla \ref{table:results_best} se 
+      puede ver que
+      \begin{itemize}
+          \item los mejores resultados (los máximos) fueron producidos por las redes de dos 
+                capas: $t,a = \valT,\valA$ y $t,t = \valT,\valT$.
+          \item la configuración con el resultado siguiente fue de una sola capa $t=\valT$.
+          \item los peores máximos fueron dados por la configuración $a=\valA$.
+      \end{itemize}
+\item Pero en las figuras \ref{fig:NHc} y \ref{fig:NHe} se puede ver que en promedio, 
+      los mejores resultados fueron dados por la configuración de una capa: $a=\valA$. Esto significa que está menos influenciada por los 
+      demás parámetros.
+      Igual, las redes $t,a$ y $t,t$ mostraron promedios notablemente peores que sus 
+      máximos.
+\item La configuración $a,t=\valA,\valT$ no mostró ni bien máximo, ni bien promedio.
+\end{enumerate}
+
+\subsection{Matrices de confusión}
+
+\begin{enumerate}
+\item \verb|Fire&Smoke| mostró el peor ratio de clasificación \emph{verdadera positiva}.
+\item \verb|Neither| mostró el mejor ratio de clasificación \emph{verdadera positiva}, 
+                     después sigue \verb|Smoke|.
+\item \verb|Neither| también demuestra el mayor ratio de clasificación
+                     \emph{falsa positiva}.
+\item El menor ratio de clasificación \emph{falsa positiva} fue mostrado por clases
+      \verb|Fire| y \verb|Fire&Smoke|.
+\item Aun que la clase \verb|Neither| mostró el peor ratio de falsas positivas, 
+      demuestra también la mejor precisión entre las clases.
+\item \verb|Fire&Smoke| tiene la peor precisión de las clases utilizadas.
+\end{enumerate}
+
+Cómo se puede puede ver en la figura \ref{fig:classes}:
+\begin{itemize}
+\item Las clases \verb|Fire| y \verb|Smoke| se distinguen bien.
+\item Se distingue bien \verb|Neither| de \verb|Fire|, pero no al contrario.
+\item La clase \verb|Fire&Smoke| se distingue mal de ambos \verb|Fire| y \verb|Smoke|.
+\item \verb|Fire| se distingue mal de \verb|Fire&Smoke|.
+\item \verb|Fire| y \verb|Smoke| tienen en porcentaje de equivocaciones en favor de 
+      \verb|Neither| parecido ($\approx 14\%$).
+\end{itemize}
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+\input{confusion}
+
+\begin{figure}
+    \input{classes.tikz}
+    \caption{Diagrama de clasificación para \#1 de la tabla \ref{table:results_best}.
+             En los nodos se presenta la clase y el ratio de clasificación \emph{verdadera 
+             positiva}. Las flechas significan la clasificación equivocada y apuntan a las 
+             clases que fueron asignadas por error. Están etiquetadas por el ratio de 
+             clasificación \emph{falsa positiva} y el grosor de la linea también lo refleja.
+            }
+    \label{fig:classes}
+\end{figure}
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+
+\subsection{Notas de mejoramiento}
+\begin{enumerate}
+\item Configuración de la red:
+    \begin{itemize}
+        \item Utilizar ``learning rate'' en el rango $(0, 0.2]$.
+        \item Ajustar ``momentum'' $\leq 0.5$.
+        \item Usar una sola capa con $t$ neuronas, o de dos capas, con
+              $t$ neuronas en la primera capa.
+        \item Investigar el mejor tiempo de entrenamiento para las configuraciones 
+              mencionadas.
+    \end{itemize}
+\item Metodología:
+    \begin{itemize}
+        \item Remover clase \verb|Fire&Smoke|, porque no solamente su calidad de clasificación es mala, 
+        pero todavía atrae alrededor de 16\% de instancias de clase
+              \verb|Fire|.
+        \item Establecer la ``cantidad'' mínima de fuego/humo en la región de imagen para 
+              considerarla de la clase correspondiente; ignorar los regiones que no tienen
+              bastante de evidencia. Eso debería de mejorar la calidad de distinción para 
+              \verb|Fire| $\rightarrow$ \verb|Neither| y 
+              \verb|Smoke| $\rightarrow$ \verb|Neither|.
+    \end{itemize}
+\end{enumerate}
+
 			 
 \end{document}
 

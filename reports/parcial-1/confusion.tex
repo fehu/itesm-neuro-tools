@@ -1,0 +1,230 @@
+\begin{figure}[h]
+    \centering
+    \footnotesize
+    \renewcommand{\thesubfigure}{\arabic{subfigure}}
+ 
+    \begin{subfigure}[b]{\textwidth}
+    \caption{}
+    \label{fig:cmatrix01}
+    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+			   a   b   c   d   e   <-- classified as
+			 200   8  49  41   0 |   a = Fire
+			  12 407  29  70   0 |   b = Smoke
+			  54  41 132  22   0 |   c = Fire&Smoke
+			  28  51   7 748   0 |   d = Neither
+			   0   0   0   0   0 |   e = Ignore
+
+               TP Rate   FP Rate   Precision   Recall  F-Measure   ROC Area  Class
+                 0.671     0.059      0.68      0.671     0.676      0.901    Fire
+                 0.786     0.072      0.803     0.786     0.794      0.928    Smoke
+                 0.53      0.052      0.608     0.53      0.567      0.869    Fire&Smoke
+                 0.897     0.125      0.849     0.897     0.872      0.931    Neither
+                 0         0          0         0         0          ?        Ignore
+Weighted Avg.    0.783     0.091      0.778     0.783     0.78       0.917
+    \end{lstlisting} 
+    \end{subfigure}
+
+
+    \begin{subfigure}[b]{\textwidth}
+    \caption{}
+    \label{fig:cmatrix02}
+    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+			   a   b   c   d   e   <-- classified as
+			 212   7  46  33   0 |   a = Fire
+			   6 413  35  64   0 |   b = Smoke
+			  62  50 121  16   0 |   c = Fire&Smoke
+			  38  33  25 738   0 |   d = Neither
+			   0   0   0   0   0 |   e = Ignore
+
+               TP Rate   FP Rate   Precision   Recall  F-Measure   ROC Area  Class
+                 0.711     0.066      0.667     0.711     0.688      0.919    Fire
+                 0.797     0.065      0.821     0.797     0.809      0.921    Smoke
+                 0.486     0.064      0.533     0.486     0.508      0.865    Fire&Smoke
+                 0.885     0.106      0.867     0.885     0.876      0.945    Neither
+                 0         0          0         0         0          ?        Ignore
+Weighted Avg.    0.781     0.083      0.779     0.781     0.78       0.924
+    \end{lstlisting}
+    \end{subfigure} 
+    
+    
+    \begin{subfigure}[b]{\textwidth}
+    \caption{}
+    \label{fig:cmatrix03}
+    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+			   a   b   c   d   e   <-- classified as
+			 201  13  41  43   0 |   a = Fire
+			   7 417  46  48   0 |   b = Smoke
+			  54  48 130  17   0 |   c = Fire&Smoke
+			  31  49  20 734   0 |   d = Neither
+			   0   0   0   0   0 |   e = Ignore
+
+               TP Rate   FP Rate   Precision   Recall  F-Measure   ROC Area  Class
+                 0.674     0.057      0.686     0.674     0.68       0.91     Fire
+                 0.805     0.08       0.791     0.805     0.798      0.93     Smoke
+                 0.522     0.065      0.549     0.522     0.535      0.87     Fire&Smoke
+                 0.88      0.101      0.872     0.88      0.876      0.938    Neither
+                 0         0          0         0         0          ?        Ignore
+Weighted Avg.    0.78      0.084      0.778     0.78      0.779      0.922
+    \end{lstlisting}
+    \end{subfigure}
+\phantomcaption
+\end{figure}
+
+
+\clearpage
+\begin{figure}[h]
+\ContinuedFloat 
+\renewcommand{\thesubfigure}{\arabic{subfigure}}
+
+    \begin{subfigure}[b]{\textwidth}
+    \caption{}
+    \label{fig:cmatrix04}
+    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+			   a   b   c   d   e   <-- classified as
+			 190  12  55  41   0 |   a = Fire
+			   3 421  35  59   0 |   b = Smoke
+			  50  40 138  21   0 |   c = Fire&Smoke
+			  33  54  17 730   0 |   d = Neither
+			   0   0   0   0   0 |   e = Ignore
+
+               TP Rate   FP Rate   Precision   Recall  F-Measure   ROC Area  Class
+                 0.638     0.054      0.688     0.638     0.662      0.913    Fire
+                 0.813     0.077      0.799     0.813     0.806      0.942    Smoke
+                 0.554     0.065      0.563     0.554     0.559      0.866    Fire&Smoke
+                 0.875     0.114      0.858     0.875     0.866      0.942    Neither
+                 0         0          0         0         0          ?        Ignore
+Weighted Avg.    0.779     0.088      0.777     0.779     0.777      0.928
+    \end{lstlisting}
+    \end{subfigure}
+
+
+    \begin{subfigure}[b]{\textwidth}
+    \caption{}
+    \label{fig:cmatrix05}
+    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+			   a   b   c   d   e   <-- classified as
+			 204   7  48  39   0 |   a = Fire
+			   5 410  37  66   0 |   b = Smoke
+			  56  46 126  21   0 |   c = Fire&Smoke
+			  34  49  13 738   0 |   d = Neither
+			   0   0   0   0   0 |   e = Ignore
+
+               TP Rate   FP Rate   Precision   Recall  F-Measure   ROC Area  Class
+                 0.685     0.059      0.682     0.685     0.683      0.907    Fire
+                 0.792     0.074      0.801     0.792     0.796      0.933    Smoke
+                 0.506     0.059      0.563     0.506     0.533      0.838    Fire&Smoke
+                 0.885     0.118      0.854     0.885     0.869      0.941    Neither
+                 0         0          0         0         0          ?        Ignore
+Weighted Avg.    0.778     0.089      0.774     0.778     0.776      0.92 
+    \end{lstlisting}
+    \end{subfigure}
+
+
+    \begin{subfigure}[b]{\textwidth}
+    \caption{}
+    \label{fig:cmatrix06}
+    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+			   a   b   c   d   e   <-- classified as
+			 197   6  58  37   0 |   a = Fire
+			  10 400  38  70   0 |   b = Smoke
+			  50  44 135  20   0 |   c = Fire&Smoke
+			  34  43  13 744   0 |   d = Neither
+			   0   0   0   0   0 |   e = Ignore
+
+               TP Rate   FP Rate   Precision   Recall  F-Measure   ROC Area  Class
+                 0.661     0.059      0.677     0.661     0.669      0.909    Fire
+                 0.772     0.067      0.811     0.772     0.791      0.929    Smoke
+                 0.542     0.066      0.553     0.542     0.548      0.867    Fire&Smoke
+                 0.892     0.119      0.854     0.892     0.873      0.941    Neither
+                 0         0          0         0         0          ?        Ignore
+Weighted Avg.    0.777     0.089      0.775     0.777     0.776      0.923
+    \end{lstlisting}
+    \end{subfigure}
+
+%    \begin{subfigure}[b]{0.49\textwidth}
+%    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+%   a   b   c   d   e   <-- classified as
+% 200   8  49  41   0 |   a = Fire
+%  12 407  29  70   0 |   b = Smoke
+%  54  41 132  22   0 |   c = Fire&Smoke
+%  28  51   7 748   0 |   d = Neither
+%   0   0   0   0   0 |   e = Ignore
+%    \end{lstlisting}
+%    \caption{}
+%    \label{fig:cmatrix01}
+%    \end{subfigure}
+%    \begin{subfigure}[b]{0.49\textwidth}
+%    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+%   a   b   c   d   e   <-- classified as
+% 212   7  46  33   0 |   a = Fire
+%   6 413  35  64   0 |   b = Smoke
+%  62  50 121  16   0 |   c = Fire&Smoke
+%  38  33  25 738   0 |   d = Neither
+%   0   0   0   0   0 |   e = Ignore
+%    \end{lstlisting}
+%    \caption{}
+%    \label{fig:cmatrix02}
+%    \end{subfigure}
+%    \\
+%    \begin{subfigure}[b]{0.49\textwidth}
+%    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+%   a   b   c   d   e   <-- classified as
+% 201  13  41  43   0 |   a = Fire
+%   7 417  46  48   0 |   b = Smoke
+%  54  48 130  17   0 |   c = Fire&Smoke
+%  31  49  20 734   0 |   d = Neither
+%   0   0   0   0   0 |   e = Ignore
+%    \end{lstlisting}
+%    \caption{}
+%    \label{fig:cmatrix03}
+%    \end{subfigure}
+%    \begin{subfigure}[b]{0.49\textwidth}
+%    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+%   a   b   c   d   e   <-- classified as
+% 190  12  55  41   0 |   a = Fire
+%   3 421  35  59   0 |   b = Smoke
+%  50  40 138  21   0 |   c = Fire&Smoke
+%  33  54  17 730   0 |   d = Neither
+%   0   0   0   0   0 |   e = Ignore
+%    \end{lstlisting}
+%    \caption{}
+%    \label{fig:cmatrix04}
+%    \end{subfigure}
+%    \\
+%    \begin{subfigure}[b]{0.49\textwidth}
+%    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+%   a   b   c   d   e   <-- classified as
+% 204   7  48  39   0 |   a = Fire
+%   5 410  37  66   0 |   b = Smoke
+%  56  46 126  21   0 |   c = Fire&Smoke
+%  34  49  13 738   0 |   d = Neither
+%   0   0   0   0   0 |   e = Ignore
+%    \end{lstlisting}
+%    \caption{}
+%    \label{fig:cmatrix05}
+%    \end{subfigure}
+%    \begin{subfigure}[b]{0.49\textwidth}
+%    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+%   a   b   c   d   e   <-- classified as
+% 197   6  58  37   0 |   a = Fire
+%  10 400  38  70   0 |   b = Smoke
+%  50  44 135  20   0 |   c = Fire&Smoke
+%  34  43  13 744   0 |   d = Neither
+%   0   0   0   0   0 |   e = Ignore
+%    \end{lstlisting}
+%    \caption{}
+%    \label{fig:cmatrix06}
+%    \end{subfigure}
+
+
+%    \begin{subfigure}[b]{0.49\textwidth}
+%    \begin{lstlisting}[language={}, basicstyle=\footnotesize, frame=none, basewidth=0.45em]
+%
+%    \end{lstlisting}
+%    \caption{}
+%    \label{fig:cmatrix0}
+%    \end{subfigure}
+
+\caption{Matrices de confusión para los mejores resultados 1-6.}
+\label{fig:cmatrices}
+\end{figure}
