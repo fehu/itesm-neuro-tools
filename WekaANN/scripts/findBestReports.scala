@@ -23,6 +23,7 @@ def selectCriteria: Stream[String] => Double = {
 
 val dir = args(0)
 val showAll = args contains "--show-all"
+val worst = args contains "--worst"
 
 
 val files = new File(dir).listFiles().toStream.filter(_.isFile)
@@ -33,7 +34,10 @@ val cs = for {
   if lines.headOption map (_.trim) contains "=== Summary ==="
 } yield selectCriteria(lines) -> file
 
-val best = cs.sortBy(_._1)
+val best = {
+  val t = cs.sortBy(_._1)
+  if (worst) t else t.reverse
+}
 
 val toShow = if(showAll) best else best.take(bestToShow)
 
