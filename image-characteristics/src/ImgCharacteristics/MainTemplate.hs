@@ -41,10 +41,11 @@ main' :: ( Num num
          , RegionsExtractor img
          , ImageToPixbuf img
          , Convertible RGB img
+         , RegionsClassesProvider rcp img
          )
       =>
            Maybe (img -> String -> (Int,Int) -> class' -> IO())
-        -> ClassesInterview img class'
+        -> rcp img class'
         -> CharacteristicsExtractor img num l
         -> IO ()
 main' mbSave ci ce = getArgs >>= parseArgs' mbSave ci ce
