@@ -1,9 +1,26 @@
--- DescriptiveStatsAll
+-----------------------------------------------------------------------------
+--
+-- Module      :  WildfireMainTemplate
+-- Copyright   :
+-- License     :  MIT
+--
+-- Maintainer  :  -
+-- Stability   :
+-- Portability :
+--
+-- |
+--
+-----------------------------------------------------------------------------
 
+{-# LANGUAGE FlexibleInstances, TypeOperators, FlexibleContexts #-}
 
-{-# LANGUAGE FlexibleInstances, TypeOperators #-}
+module WildfireMainTemplate (
 
-module Main where
+  fixedRegions
+
+, wildfireMain
+
+) where
 
 import Nat.Vec
 
@@ -23,18 +40,8 @@ import Data.Time.Format
 import System.FilePath
 import System.Directory
 
-data WildfireClass = Fire
-                   | Smoke
-                   | FireAndSmoke
-                   | None
-                   | Ignore
-                   deriving (Enum, Bounded)
+import WildfireClass
 
-instance Show WildfireClass where show Fire = "Fire"
-                                  show Smoke = "Smoke"
-                                  show FireAndSmoke = "Fire&Smoke"
-                                  show None = "Neither"
-                                  show Ignore = "Ignore"
 
 fixedRegions = FixedColRowRegions{ rRow = 50
                                  , rCol = 50
@@ -43,8 +50,7 @@ fixedRegions = FixedColRowRegions{ rRow = 50
 
 instance RegionsExtractor RGB where foreachRegion = fixedColRowRegions fixedRegions
 
-main = do ci <- classProvider :: IO (ClassesInterview RGB WildfireClass)
-
+wildfireMain saveRegions ci = do
           let eRGB  = extractorRGB  descriptiveStats
               eHSV  = extractorHSV  descriptiveStats
               eGrey = extractorGrey descriptiveStats
@@ -61,12 +67,7 @@ main = do ci <- classProvider :: IO (ClassesInterview RGB WildfireClass)
                                              filename = name ++ "_" ++ show row ++ "-" ++ show col
                                                              ++ "_" ++ show c ++ ext
                                             in writePng (reportsDir ++ "/" ++ filename) $ toJuicyRGB img
-
+              save' = if saveRegions then Just save else Nothing
           createDirectoryIfMissing True reportsDir
 
-          main' (Just save) ci e2
-
-
-
-
-
+          main' save' ci e2

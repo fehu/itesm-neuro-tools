@@ -43,14 +43,16 @@ data ClassesInterview a class' = ClassesInterview {
 
 class ImageToPixbuf img where img2Pixbuf :: img -> IO Pixbuf
 
-imagesCInterview :: ( Enum class', Bounded class', Show class'
-                    , ImageToPixbuf img
-                    ) => IO (ClassesInterview img class')
-imagesCInterview = do
+imagesCInterview :: ( Class class', ImageToPixbuf img ) =>
+                         Bool -- ^ show classUnknown?
+                      -> IO (ClassesInterview img class')
+imagesCInterview showCU = do
     window <- windowNew
     wImg   <- imageNew
     cVar   <- newEmptyMVar
-    let classes = [minBound..maxBound]
+    let classes' = [minBound..maxBound]
+        classes  = if showCU then classes'
+                             else filter (classUnknown /=) classes'
     bBox  <- hButtonBoxNew
     cBtns <- sequence $ do c <- classes
                            return $ do btn <- buttonNewWithLabel (show c)
@@ -87,12 +89,12 @@ imagesCInterview = do
 
 instance (ImageToPixbuf img) => RegionsClassesProvider ClassesInterview img where
     regionClass = ciAskClass
-    classProvider = do askVar <- newEmptyMVar
-                       uiThread <- forkOS $ do initGUI
-                                               ci <- imagesCInterview
-                                               putMVar askVar ci
-                                               mainGUI
-                       takeMVar askVar
+    classProvider showCU = do askVar <- newEmptyMVar
+                              uiThread <- forkOS $ do initGUI
+                                                      ci <- imagesCInterview showCU
+                                                      putMVar askVar ci
+                                                      mainGUI
+                              takeMVar askVar
 
 
 

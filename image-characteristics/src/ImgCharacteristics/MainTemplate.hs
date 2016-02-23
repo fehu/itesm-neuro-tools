@@ -88,7 +88,8 @@ collectImagesCharacteristics ci ce relName imgPaths target mbSave = do
 
     cs <- collectCharacteristics ci ce mbSave $ map (first convert) imgs
 
-    let !weka = learnDataToWeka (characteristicsNames ce) [minBound..maxBound] cs
+    let classDomain = filter (classUnknown /=) [minBound..maxBound]
+        !weka = learnDataToWeka (characteristicsNames ce) classDomain cs
 
     writeFile target $ stringifyWekaData relName weka
 

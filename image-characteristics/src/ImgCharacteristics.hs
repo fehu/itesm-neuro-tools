@@ -30,9 +30,10 @@ module ImgCharacteristics (
 , ForeachRegion
 , FixedColRowRegions(..)
 
-, Class
+, Class(..)
 , LearnDataEntry(..)
 , RegionsClassesProvider(..)
+, RegionsClassUnknown
 
 , imageCharacteristics
 , extractLearnData
@@ -82,11 +83,20 @@ data LearnDataEntry l num class' = LearnDataEntry !(Vec l num, class')
 instance (Show n, Show c) => Show (LearnDataEntry l n c) where
     show (LearnDataEntry (v,c)) = show c ++ ": " ++ show v
 
-type Class c = (Show c, Enum c, Bounded c)
+
+
+class (Show c, Enum c, Bounded c, Eq c) => Class c where classUnknown :: c
 
 class RegionsClassesProvider p img where
-    classProvider :: (Class class') => IO (p img class')
+    classProvider :: (Class class') => Bool -- ^ show classUnknown?
+                                    -> IO (p img class')
     regionClass   :: (Class class') => p img class' -> img -> IO class'
+
+
+data RegionsClassUnknown img class'
+instance RegionsClassesProvider RegionsClassUnknown img where
+    classProvider _ = return undefined
+    regionClass _ _ = return classUnknown
 
 -----------------------------------------------------------------------------
 

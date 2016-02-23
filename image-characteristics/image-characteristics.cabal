@@ -54,55 +54,12 @@ library
   default-language:    Haskell2010
 
 
-
-executable img-chv_descriptive-stats_rgb
+executable img-chv_descriptive-stats
   hs-source-dirs:      exec
-  main-is:             DescriptiveStatsRGB.hs
+  main-is:             WildfireDescriptiveStats.hs
 
-  build-depends:       base >=4.8 && <4.9
-                     , image-characteristics
-                     , friday == 0.2.2.0
-                     , Nat >= 0.1.3
-                     , gtk3 >= 0.14
-
-  default-language:    Haskell2010
-  ghc-options:         -threaded
-
-
-
-executable img-chv_descriptive-stats_hsv
-  hs-source-dirs:      exec
-  main-is:             DescriptiveStatsHSV.hs
-
-  build-depends:       base >=4.8 && <4.9
-                     , image-characteristics
-                     , friday == 0.2.2.0
-                     , Nat >= 0.1.3
-                     , gtk3 >= 0.14
-
-  default-language:    Haskell2010
-  ghc-options:         -threaded
-
-
-
-executable img-chv_descriptive-stats_gray
-  hs-source-dirs:      exec
-  main-is:             DescriptiveStatsGray.hs
-
-  build-depends:       base >=4.8 && <4.9
-                     , image-characteristics
-                     , friday == 0.2.2.0
-                     , Nat >= 0.1.3
-                     , gtk3 >= 0.14
-
-  default-language:    Haskell2010
-  ghc-options:         -threaded
-
-
-
-executable img-chv_descriptive-stats_all
-  hs-source-dirs:      exec
-  main-is:             DescriptiveStatsAll.hs
+  other-modules:       WildfireClass
+                       WildfireMainTemplate
 
   build-depends:       base >=4.8 && <4.9
                      , image-characteristics
@@ -120,9 +77,12 @@ executable img-chv_descriptive-stats_all
 
 
 
-executable img-chv_descriptive-stats_all_class_unknown
+executable img-chv_descriptive-stats_cunknown
   hs-source-dirs:      exec
-  main-is:             DescriptiveStatsAll_ClassUnknown.hs
+  main-is:             WildfireDescriptiveStats_ClassUnknown.hs
+
+  other-modules:       WildfireClass
+                       WildfireMainTemplate
 
   build-depends:       base >=4.8 && <4.9
                      , image-characteristics
