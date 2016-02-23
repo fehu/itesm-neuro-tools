@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------------
 --
--- Module      :  ImgCharacteristics.Weka
+-- Module      :  ImgCharacteristics.WekaData
 -- Copyright   :
 -- License     :  MIT
 --
@@ -12,7 +12,7 @@
 --
 
 
-module ImgCharacteristics.Weka (
+module ImgCharacteristics.WekaData (
 
   learnDataToWeka
 

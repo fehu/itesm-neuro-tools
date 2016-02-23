@@ -18,7 +18,7 @@ module ImgCharacteristics.MainTemplate where
 import ImgCharacteristics
 import ImgCharacteristics.GTK
 import ImgCharacteristics.Friday
-import ImgCharacteristics.Weka
+import ImgCharacteristics.WekaData
 
 import System.Environment
 import System.Exit

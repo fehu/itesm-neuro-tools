@@ -2,7 +2,7 @@
 -- further documentation, see http://haskell.org/cabal/users-guide/
 
 name:                image-characteristics
-version:             0.2.2.0
+version:             0.2.3.0
 synopsis:            Image characteristics extraction
 -- description:
 homepage:            https://github.com/fehu/itesm-neuro-tools/tree/master/image-characteristics
@@ -13,7 +13,10 @@ maintainer:          -
 -- copyright:
 category:            Graphics
 build-type:          Simple
--- extra-source-files:
+
+extra-source-files:  README.md
+                     makeWekaInterface.sh
+
 cabal-version:       >=1.10
 
 
@@ -26,7 +29,7 @@ library
                        ImgCharacteristics.Friday.Extractors
                        ImgCharacteristics.GTK
                        ImgCharacteristics.GTK.FromFriday
-                       ImgCharacteristics.Weka
+                       ImgCharacteristics.WekaData
                        ImgCharacteristics.MainTemplate
 
   -- other-modules:
