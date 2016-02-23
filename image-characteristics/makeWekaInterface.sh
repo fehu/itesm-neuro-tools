@@ -2,4 +2,4 @@ CLASSES="weka.classifiers.functions.MultilayerPerceptron:weka.classifiers.Classi
          :weka.core.converters.ConverterUtils.DataSource:weka.core.Instances"
 
 rm -rf bindings
-j2hs -X -c $WEKA_HOME/weka.jar -n $CLASSES -t bindings
+j2hs -Xv -c $WEKA_HOME/weka.jar -C $CLASSES -p weka -t bindings -n "weka-bindings" -y "0.1.0"

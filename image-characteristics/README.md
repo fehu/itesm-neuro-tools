@@ -11,3 +11,6 @@ For example:
 ```bash
 img-chv_descriptive-stats_all --dir ~/Pictures/wildfire "wildfire classification" wildfire.arff
 ```
+
+
+Requires [java-bridge fork](https://github.com/fehu/haskell-java-bridge-fork)
