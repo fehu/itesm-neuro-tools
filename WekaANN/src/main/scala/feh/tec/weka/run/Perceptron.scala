@@ -44,6 +44,8 @@ object Perceptron extends App{
   val reportsDir = setArgs.getOrElse("reports-dir", "reports").toFile                                                     // ARG
 
   val classAttrName = setArgs.get("class")
+  
+  val saveModel = setArgs.get("saveModel")
 
 
   if (!reportsDir.exists()) reportsDir.mkdir().ensuring(identity[Boolean] _, "failed to create reports directory")
@@ -88,7 +90,9 @@ object Perceptron extends App{
 //          sys.runtime.exec(s).waitFor()
       }
 
-      write compose EvaluationResult.fullSummary
+      (c,e) =>
+        saveModel.foreach(fname => EvaluationResult.saveModel(fname.toFile)(c,e))
+        write(EvaluationResult.fullSummary(c,e))
     }
   }
 

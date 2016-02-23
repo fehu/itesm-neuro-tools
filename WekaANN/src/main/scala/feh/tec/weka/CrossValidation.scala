@@ -1,5 +1,6 @@
 package feh.tec.weka
 
+import java.io.ObjectOutputStream
 import java.util
 import java.util.Random
 
@@ -16,7 +17,7 @@ import scala.util.{Failure, Success}
 abstract class CrossValidation[C <: Classifier] {
   def validationFolds: Int
   def prepareInstances: Instances => Instances
-  def extractEvaluationResult: Evaluation => Unit
+  def extractEvaluationResult: (C, Evaluation, Instances) => Unit
 
   protected val classifier: C
 
@@ -30,7 +31,7 @@ abstract class CrossValidation[C <: Classifier] {
     val insts = prepareInstances(instances)
     val evaluation = new Evaluation(instances)
     evaluation.crossValidateModel(classifier, insts, validationFolds, new Random)
-    extractEvaluationResult(evaluation)
+    extractEvaluationResult(classifier, evaluation, insts)
   }
 }
 
@@ -84,13 +85,24 @@ object EvaluationResult{
 
   def writeToFile(file: File): String => Unit = s => file.withOutputStream(File.write.utf8(s))
 
-  def fullSummary(e: Evaluation) = List(
-    summary(e),
+  def fullSummary[C <: Classifier](c: C, e: Evaluation, instances: Instances) = List(
+    summary(c, e, instances),
     e.toMatrixString,
     e.toClassDetailsString,
     e.toCumulativeMarginDistributionString
   ).mkString("\n"*3)
 
-  def summary(e: Evaluation) = e.toSummaryString(true)
+  def summary[C <: Classifier](c: C, e: Evaluation, instances: Instances) = e.toSummaryString(true)
+
+  def saveModel[C <: Classifier](file: File)(c: C, e: Evaluation, instances: Instances) = file.withOutputStream{
+    os =>
+      val oStream = new ObjectOutputStream(os)
+      oStream.writeObject(c)
+      Option(instances.stringFreeStructure()).map{
+        i => oStream.writeObject(i)
+      }
+      oStream.flush()
+      oStream.close()
+  }
 
 }
