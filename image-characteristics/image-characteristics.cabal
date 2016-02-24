@@ -2,7 +2,7 @@
 -- further documentation, see http://haskell.org/cabal/users-guide/
 
 name:                image-characteristics
-version:             0.2.3.0
+version:             0.3.0.0
 synopsis:            Image characteristics extraction
 -- description:
 homepage:            https://github.com/fehu/itesm-neuro-tools/tree/master/image-characteristics
@@ -31,6 +31,9 @@ library
                        ImgCharacteristics.GTK.FromFriday
                        ImgCharacteristics.WekaData
                        ImgCharacteristics.MainTemplate
+                       WekaCall
+--                       WekaCall.Learn
+--                       WekaCall.Classify
 
   -- other-modules:
 
@@ -47,6 +50,8 @@ library
                      , WekaData >= 0.2
                      , containers > 0.5
                      , filepath >= 1.3
+                     , java-bridge >= 0.20160223.0
+                     , weka-bindings >= 0.1
   hs-source-dirs:      src
 
   default-extensions:  Rank2Types
@@ -100,4 +105,16 @@ executable img-chv_descriptive-stats_cunknown
 
   default-language:    Haskell2010
   ghc-options:         -threaded
+
+
+executable testWekaCalls
+  hs-source-dirs:      test
+  main-is:             WekaCallTest.hs
+
+  build-depends:       base >=4.8 && <4.9
+                     , image-characteristics
+                     , filepath >= 1.3
+
+  default-language:    Haskell2010
+
 
