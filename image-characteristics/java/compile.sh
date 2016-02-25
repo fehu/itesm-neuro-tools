@@ -6,6 +6,6 @@ CLASSES_DIR="$DIR/classes/"
 rm -rf $CLASSES_DIR
 mkdir $CLASSES_DIR
 
-javac -cp $WEKA_HOME/weka.jar -d $CLASSES_DIR $DIR/src/*
+javac -cp $WEKA_HOME/weka.jar -d $CLASSES_DIR $DIR/src/* -Xlint:unchecked
 
 # -sourcepath ./src/  

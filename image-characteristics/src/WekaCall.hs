@@ -42,6 +42,8 @@ import qualified Foreign.Java.IO as JIO
 
 import JUtils
 import WekaCall.Evaluation
+import WekaCall.Filters
+import WekaCall.Train
 
 -----------------------------------------------------------------------------
 
@@ -72,28 +74,51 @@ extraClasspath = [ "java/classes" ]
 test = withWekaHomeEnv extraClasspath $ do
     let src = "wildfire01.arff"
         target = "wildfire01-01.model"
+        report = "last-run.report"
+
     Just instances <- readDatasource src
     Just cAttr <- Instances.attribute' instances =<< jString "class"
     Instances.setClass instances cAttr :: Java ()
---    Just summary <- Instances.toSummaryString instances
---    toString summary >>= JIO.print
 
-    c <- multilayerPerceptron
---    (MultilayerPerceptron.getTrainingTime c :: Java Int32) >>= println
---    stringResult (MultilayerPerceptron.getHiddenLayers c :: Java (Maybe JString)) >>= println
---    (MultilayerPerceptron.globalInfo c :: Java (Maybe JString)) >>= toString . fromJust >>= println
+    Just summary <- Instances.toSummaryString instances
+    toString summary >>= JIO.print
+
+    c0 <- multilayerPerceptron
+
+    nom2num <- nominalToBinary
+    dropIgnore <- removeWithValues cAttr ["Ignore"]
+
+    filters <- successiveFilters [SomeFilter dropIgnore, SomeFilter nom2num]
+
+    c <- withFilter filters c0
+
+    JIO.print "\n\n\tTraining model"
+    trainModel c instances
+    println " finished"
+
+    saveModel target "wildfire01 v.01" c instances
+    println $ "wrote the model to " ++ target
 
     let cv = CrossValidation {
           classifier = c
         , validationFolds = 10
-        , prepareInstances = const $ return () -- filterAttributeInstance "class" ["Ignore"]
         , prepareEvaluation = const $ return ()
-        , extractResult = reportStdOut . buildReports "\n\n\n" defaultReporter
+        , extractResult = \js -> let s = buildReports "\n\n\n" defaultReporter js
+                                 in mapM_ ($ s) [reportStdOut, reportFoFile report]
         }
 
-    crossValidation cv instances
 
-    saveModel target "wildfire01 v.01" (classifier cv) instances
+    -- The filters were applied only for the train data, apply filters for cross-validation.
+    instances' <- instances `applyFilter` filters
+    println "Cross validation (with 'Ignore' instances removed)"
+    crossValidation cv instances'
+
+
+--"weka.filters.MultiFilter -F \"weka.filters.unsupervised.instance.RemoveWithValues -S 0.0 -C 57 -L 5\"
+--                          -F \"weka.filters.unsupervised.attribute.NominalToBinary -R first-last\""
+-- -W weka.classifiers.functions.MultilayerPerceptron -- -L 0.3 -M 0.2 -N 500 -V 0 -S 0 -E 20 -H a
+
+
 
 --
 --

@@ -8,7 +8,11 @@ CLASSES="weka.classifiers.functions.MultilayerPerceptron\
 :weka.classifiers.Classifier\
 :weka.classifiers.Evaluation\
 :weka.core.converters.ConverterUtils.DataSource\
-:weka.core.Instances"
+:weka.core.Instances\
+:weka.classifiers.meta.FilteredClassifier\
+:weka.filters.unsupervised.attribute.NominalToBinary\
+:weka.filters.unsupervised.instance.RemoveWithValues\
+:weka.filters.MultiFilter"
 
 CLASSES_CUSTOM="weka.WekaCalls"
          

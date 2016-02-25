@@ -27,7 +27,9 @@ module JUtils (
 , jString
 , stringResult
 
---, EmptyJArray(..)
+, JList
+, jObjectsList
+, appendToJList
 
 , JNI.Java
 , JNI.io
@@ -42,20 +44,30 @@ module JUtils (
 
 ) where
 
-import System.Environment
-import System.FilePath
+-----------------------------------------------------------------------------
 
 import qualified Foreign.Java as JNI
 import qualified Foreign.Java.Bindings.Support as JNIS
 import qualified Java.Lang as Lang
 import qualified Foreign.Java.IO as JIO
-import qualified Foreign.Java.Types as JTypes
+import qualified Java.Util.List as JList
+import qualified Weka.WekaCalls as Helper
 
-import Foreign.Ptr (nullPtr)
+import Java.Util (List')
+import Java.Lang (Object')
+
+-----------------------------------------------------------------------------
+
+import System.Environment
+import System.FilePath
 
 import Control.Monad (liftM)
 import Data.Maybe (fromJust)
 import Data.List (intercalate)
+
+-----------------------------------------------------------------------------
+
+--instance JavaClassId
 
 -----------------------------------------------------------------------------
 
@@ -106,9 +118,22 @@ jString s = do Just clazz <- JNI.getClass "java.lang.String"
 
 -----------------------------------------------------------------------------
 
---data EmptyJArray = EmptyJArray
 
---instance JNIS.Array EmptyJArray where asMaybeArrayObject _ = return Nothing
+type JList  = List' JNI.JObject
+
+instance Lang.Object JNI.JObject
+
+instance JNIS.ObjectResult JList where
+    toObjectResult (Right (Just obj)) = JNIS.unsafeFromJObject obj
+--Either JThrowable (Maybe JObject) -> Java m
+
+appendToJList :: JList -> [JNI.JObject] -> JNI.Java JList
+appendToJList jList objs = do vs <- mapM (JList.add jList :: JNI.JObject -> JNI.Java Bool) objs
+                              return jList
+
+jObjectsList :: [JNI.JObject] -> JNI.Java JList
+jObjectsList objs = do Just jList <- Helper.newList
+                       appendToJList jList objs
 
 -----------------------------------------------------------------------------
 
