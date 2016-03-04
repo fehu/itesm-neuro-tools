@@ -37,7 +37,7 @@ import Data.List.Split (splitOn)
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
-
+-- | Train a model and write it to file.
 mainTrain src t opts verb = do
     let classAttr   = maybe "class" text2str (opts `get` Opts.classAttribute)
         modelName   = "model"
@@ -49,14 +49,14 @@ mainTrain src t opts verb = do
         target      = text2str t
 
     withWekaClassifier classAttr classifier (text2str src) $
-        \fc instances ->
+        \c instances ->
             do -- Print summary
                Just summary <- Instances.toSummaryString instances
                toString summary >>= println
 
                -- Set classifier options
-               Just c <- FC.getClassifier fc
-               forM_ nnetOptions $ setOptions c
+               Just c' <- FC.getClassifier c
+               forM_ nnetOptions $ setOptions c'
 
                -- Train model
                JIO.print "\n\n\tTraining model"
@@ -64,7 +64,7 @@ mainTrain src t opts verb = do
                println " finished"
 
                -- Save model
-               saveModel target modelName fc instances
+               saveModel target modelName c instances
                println $ "wrote model '" ++ modelName ++ "' to " ++ target
 
                -- Cross-Validation: Save reports
@@ -84,7 +84,7 @@ mainTrain src t opts verb = do
 
                     -- The filters were applied only for the train data,
                     -- apply filters for cross-validation.
-                    Just filters <- FC.getFilter fc
+                    Just filters <- FC.getFilter c
                     instances' <- instances `applyFilter` filters
 
                     println "Cross validation (with 'Ignore' instances removed)"
