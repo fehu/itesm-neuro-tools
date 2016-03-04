@@ -98,23 +98,11 @@ crossValidation v insts = do Just evalClass  <- jClass Evaluation
 
                              Just jRand <- newInstance0 Util.Random
 
---                             JNI.toString eval >>= println
---                             JNI.toString (classifier v) >>= println
---                             JNI.toString insts >>= println
---                             println $ validationFolds v
---                             JNI.toString jRand >>= println
-
---                             JNI.arrayLength emptyArray >>= println
-
                              Helper.crossValidateModel eval (classifier v) insts
                                                             (validationFolds v) jRand :: Java ()
---                             Evaluation.crossValidateModel' eval (classifier v) insts (validationFolds v)
---                                                            jRand EmptyJArray :: Java ()
+
 
                              extractResult v eval
-
-
---evaluateModel ::
 
 
 -----------------------------------------------------------------------------
@@ -125,8 +113,7 @@ newtype WekaReportBuilder = WekaReportBuilder  [Evaluation' -> Java String]
 
 wekaReportBuilder' :: [Evaluation' -> Java (Maybe JString)] -> WekaReportBuilder
 wekaReportBuilder' = WekaReportBuilder . map ((JNI.toString . fromJust) <=<)
---WekaReportBuilder . map (flip (.) $ flip (<$>) (JNI.toString . fromJust))
---mapM (JNI.toString . fromJust)
+
 
 instance Monoid WekaReportBuilder where
     mempty = WekaReportBuilder []
@@ -148,11 +135,12 @@ defaultReporter = wekaReportBuilder' [ flip Evaluation.toSummaryString'' True
                                      , Evaluation.toClassDetailsString
                                      ]
 
-predictionsReporter = WekaReportBuilder [ Evaluation.predictions
-                                      >=> ((FastVector.toArray :: FastVector' -> Java [JNI.JObject]) . fromJust)
-                                      >=> mapM JNI.toString
-                                      >=> return . concatMap ("\n\t\t"++)
-                                      ]
+predictionsReporter = WekaReportBuilder [
+        Evaluation.predictions
+    >=> ((FastVector.toArray :: FastVector' -> Java [JNI.JObject]) . fromJust)
+    >=> mapM JNI.toString
+    >=> return . concatMap ("\n\t\t"++)
+  ]
 
 -----------------------------------------------------------------------------
 
