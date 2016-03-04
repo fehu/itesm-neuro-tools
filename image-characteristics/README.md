@@ -1,16 +1,90 @@
 Image Characteristics Extractor
 ===============================
 
-Extracts characteristic vectors from images regions and writes them in _arff_ format.
+Requires:
 
-Usages:
-  1. ```paths to images ... , relation name, target arff file```
-  2. ```--dir, path to images directory, relation name, target arff file```
+* [java-bridge fork](https://github.com/fehu/haskell-java-bridge-fork)
+* [CommandArgs] (https://github.com/fehu/CommandArgs)
+* [Nat] (https://github.com/fehu/HNat)
+* [Weka Data] (https://github.com/fehu/min-dat--weka-data)
 
-For example:
-```bash
-img-chv_descriptive-stats_all --dir ~/Pictures/wildfire "wildfire classification" wildfire.arff
+
+### Usage
+
+```
+	Wildfire Image Classification Kit (WICK)
+	-------------------------------  ----
+
+Conatains tools for 1) image characteristics extraction
+                       (descriptive statistics);
+                    2) Weka's Multilayer Perceptron model training;
+                    3) image classification, using the model.
+
+wick <mode> <source> <target> [help] [verbosity] [save-regions] [name] [no-class] [validate] [save-reports] [configure]
+
+Positional:
+  mode ::
+    1. arff  -- extract characteristic vectors from images in given directory;
+    2. model -- train perceptron model, given the characteristic vectors;
+    3. class -- classify images in given directory using given model.
+  source :: Text
+    Depending on the <mode>:
+    	1. arff  -- a directory with images to process;
+    	2. model -- *.arff data file with classes assigned;
+    	3. class -- model file to be used for classification.
+  target :: Text
+    Depending on the <mode>:
+    	1. arff  -- destination *.arff file;
+    	2. model -- destination *.model file;
+    	3. class -- *.arff file with data to classify.
+
+Optional:
+
+  help <cmd...>
+     -h --help
+     Show help
+        cmd... :: Text 	--  Commands to show the help for
+
+  verbosity <value>
+     -V --verbosity
+     Set verbosity
+        value :: Verbosity
+          verbosity level: 0-3
+          or 'silent', 'errors', 'warn', 'full'
+
+  save-regions <value>
+     --save-regions
+     [ARFF] Save region images, with assigned class.
+        value :: Text 	--  Saves root directory.
+
+  name <value>
+     -n --name
+     [ARFF] Relation name.
+        value :: Text 	--  Name.
+
+  no-class
+     -? --no-class
+     [ARFF] Do not interrogate classes and set ?.
+
+  validate <value>
+     -x --validate
+     [MODEL] Cross validate model.
+        value :: Int 	--  Validation folds.
+
+  save-reports <value>
+     --save-reports
+     [MODEL] Save validation reports.
+        value :: Text 	--  Reports directory.
+
+  configure <value>
+     -C --configure
+     [MODEL] Configure Multilayer Perceptron (see Weka).
+        value :: Text 	--  Configuration should be put in "" quotes to avoid separation.
+
 ```
 
+##### Example
 
-Requires [java-bridge fork](https://github.com/fehu/haskell-java-bridge-fork)
+```
+wick arff  ~/Pictures/wildfire fire1.arff --save-regions reports -n fire-at-X
+```

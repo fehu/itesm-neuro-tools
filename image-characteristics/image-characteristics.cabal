@@ -67,15 +67,14 @@ library
   default-language:    Haskell2010
 
 
-executable img-chv_descriptive-stats
-  hs-source-dirs:      exec
-  main-is:             WildfireDescriptiveStats.hs
 
-  other-modules:       WildfireClass
-                       WildfireMainTemplate
+executable wick
+  hs-source-dirs:      exec
+  main-is:             Main.hs
 
   build-depends:       base >=4.8 && <4.9
                      , image-characteristics
+                     , CommandArgs >= 0.1.1
                      , JuicyPixels >= 3
                      , friday-juicypixels == 0.1.1
                      , friday == 0.2.2.0
@@ -85,31 +84,11 @@ executable img-chv_descriptive-stats
                      , filepath >= 1.3
                      , directory >= 1.2
 
-  default-language:    Haskell2010
-  ghc-options:         -threaded
-
-
-
-executable img-chv_descriptive-stats_cunknown
-  hs-source-dirs:      exec
-  main-is:             WildfireDescriptiveStats_ClassUnknown.hs
-
   other-modules:       WildfireClass
-                       WildfireMainTemplate
-
-  build-depends:       base >=4.8 && <4.9
-                     , image-characteristics
-                     , JuicyPixels >= 3
-                     , friday-juicypixels == 0.1.1
-                     , friday == 0.2.2.0
-                     , Nat >= 0.1.3
-                     , gtk3 >= 0.14
-                     , time >= 1.2
-                     , filepath >= 1.3
-                     , directory >= 1.2
 
   default-language:    Haskell2010
   ghc-options:         -threaded
+
 
 
 executable testWekaCalls
@@ -118,8 +97,9 @@ executable testWekaCalls
 
   build-depends:       base >=4.8 && <4.9
                      , image-characteristics
-                     , filepath >= 1.3
+--                     , filepath >= 1.3
 
   default-language:    Haskell2010
+
 
 
