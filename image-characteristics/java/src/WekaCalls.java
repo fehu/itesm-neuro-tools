@@ -4,10 +4,15 @@ package weka;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
+import weka.core.Instance;
+import weka.core.Attribute;
+import weka.core.FastVector;
 import weka.gui.explorer.ClassifierPanel;
 import weka.core.SerializationHelper;
 import weka.filters.MultiFilter;
 import weka.filters.Filter;
+
+import util.Pair;
 
 import java.util.Random;
 import java.io.*;
@@ -16,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class WekaCalls{
+
 
     public static void crossValidateModel(Evaluation eval, Classifier classifier, Instances data,
                                           int numFolds, Random random) throws Exception {
@@ -39,6 +45,12 @@ public class WekaCalls{
       
     }
     
+    public static Pair<Classifier, Instances> loadModel(String modelFilename) throws Exception {
+      Object o[] = SerializationHelper.readAll(modelFilename);
+      return new Pair<Classifier, Instances>((Classifier) o[0], (Instances) o[1]);
+    }
+    
+    
     public static List<Object> newList() { return new ArrayList<Object>(); }
     
     
@@ -55,6 +67,19 @@ public class WekaCalls{
       String[] res = {};
       c.setOptions(ops.toArray(res));
       return;
+    }
+    
+    
+    public static Attribute newAttrNom(String attributeName, FastVector attributeValues){
+      return new Attribute(attributeName, attributeValues);
+    }
+    
+    public static Attribute newAttrNum(String attributeName){
+      return new Attribute(attributeName);
+    }
+    
+    public static Instance newInstance(int numAttributes){
+      return new Instance(numAttributes);
     }
     
 //     public static MultiFilter /*appendFilter(MultiFilter mf, Filter f) {

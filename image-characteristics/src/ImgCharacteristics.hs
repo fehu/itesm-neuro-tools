@@ -67,9 +67,9 @@ characteristicsFromVec v = CharacteristicsExtractor cs names
 
 -----------------------------------------------------------------------------
 
-type ForeachRegion   img = forall a . img -> (img -> (Int, Int) -> a) -> [a]
+type ForeachRegion img = forall a . img -> (img -> (Int, Int) -> a) -> [a]
 
-class RegionsExtractor img where foreachRegion   :: ForeachRegion img
+class RegionsExtractor img where foreachRegion :: ForeachRegion img
 
 data FixedColRowRegions = FixedColRowRegions { rRow          :: Int
                                              , rCol          :: Int

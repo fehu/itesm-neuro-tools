@@ -14,6 +14,7 @@
 module WildfireClass (
 
   WildfireClass(..)
+, hasFireSigns
 
 ) where
 
@@ -38,3 +39,7 @@ instance Show WildfireClass where show Fire = "Fire"
                                   show Unknown = "?"
 
 instance Class WildfireClass where classUnknown = Unknown
+
+
+hasFireSigns x = x == Fire || x == Smoke || x == FireAndSmoke
+

@@ -95,7 +95,7 @@ sourceDescr = [ "Depending on the <mode>:"
 targetDescr = [ "Depending on the <mode>:"
               , "\t1. arff  -- destination *.arff file;"
               , "\t2. model -- destination *.model file;"
-              , "\t3. class -- *.arff file with data to classify."
+              , "\t3. class -- images directory."
               ]
 
 

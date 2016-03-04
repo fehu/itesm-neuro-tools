@@ -8,19 +8,17 @@
 -- Stability   :
 -- Portability :
 --
--- |
+-- | See @wick -h@.
 --
 
-{-# LANGUAGE GADTs
-           , TypeSynonymInstances
-           , FlexibleInstances
-           #-}
+{-# LANGUAGE GADTs, FlexibleInstances #-}
 
 module Main where
 
 import Options
 import MainChVec
 import MainTrain
+import MainClass
 
 import CArgs
 
@@ -60,12 +58,6 @@ optsH = handleHelp "wick" header arguments
 
 ----------------------------------------------------------------------------
 ----------------------------------------------------------------------------
-
-
-mainClass s t opts verb = undefined
-
-
------------------------------------------------------------------------------
 
 
 

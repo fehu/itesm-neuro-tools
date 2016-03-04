@@ -27,12 +27,16 @@ import Vision.Image (convert, RGB, Convertible)
 
 -----------------------------------------------------------------------------
 
-collectImagesCharacteristics ci ce relName imgPaths target mbSave = do
+readImages imgPaths = do
     imgs' <- mapM readImage imgPaths
-
     let (failed, imgs) = partitionEithers imgs'
 
     forM_ failed putStrLn
+    return imgs
+
+
+collectImagesCharacteristics ci ce relName imgPaths target mbSave = do
+    imgs <- readImages imgPaths
 
     cs <- collectCharacteristics ci ce mbSave $ map (first convert) imgs
 

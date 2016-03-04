@@ -16,15 +16,16 @@
 module MainChVec where
 
 
-import Nat
+--import Nat
 import CArgs
 
 import WildfireClass
 import Options
+import MainCommon
 
 import ImgCharacteristics
 import ImgCharacteristics.GTK
-import ImgCharacteristics.Friday
+--import ImgCharacteristics.Friday
 import ImgCharacteristics.GTK.FromFriday
 import qualified ImgCharacteristics.MainTemplate as MainT
 
@@ -44,7 +45,7 @@ import Vision.Image.JuicyPixels
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
-
+-- | Build characteristic vectors and write to file.
 mainChVec :: (RegionsExtractor RGB) =>
              Text           -- ^ Source images directory.
           -> Text           -- ^ Target *.arff file.
@@ -52,25 +53,14 @@ mainChVec :: (RegionsExtractor RGB) =>
           -> Verbosity
           -> IO ()
 mainChVec dir' arff opts verb = do
-    let dir = text2str dir'
-    -- Images
-    imgs' <- listDirectory dir
-    let imgs = map (dir </>) imgs'
+    imgs <- listImages dir'
     -- Optional args
+    let
         withoutClass = isJust $ opts `get` noClass
         reportsRoot = fmap text2str (opts `get` saveRegions)
         relName = maybe "wildfire" text2str (opts `get` relationName)
 
         target = text2str arff
-
-    -- Characteristic Extractor
-    let eRGB  = extractorRGB  descriptiveStats
-        eHSV  = extractorHSV  descriptiveStats
-        eGrey = extractorGrey descriptiveStats
-
-        e1 :: CharacteristicsExtractor RGB Double (N8 :*: N3 :*: N2)
-        e1 = eRGB `combineExtractors` eHSV
-        e2 = e1 `combineExtractors` eGrey
 
     -- Save reports
     time <- getCurrentTime
@@ -90,7 +80,7 @@ mainChVec dir' arff opts verb = do
 
     -- Runner
     let run :: (RegionsClassesProvider p RGB) => p RGB WildfireClass -> IO()
-        run ci = MainT.collectImagesCharacteristics ci e2 relName imgs target save'
+        run ci = MainT.collectImagesCharacteristics ci descrStatsAll relName imgs target save'
 
     -- Run
     if withoutClass

@@ -11,7 +11,7 @@
 -- |
 --
 
-{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances, ExistentialQuantification #-}
 
 module JUtils (
 
@@ -31,6 +31,9 @@ module JUtils (
 , jObjectsList
 , jStringList
 , appendToJList
+
+, JObj(..)
+, makeFastVector
 
 , JNI.Java
 , JNI.io
@@ -53,9 +56,11 @@ import qualified Java.Lang as Lang
 import qualified Foreign.Java.IO as JIO
 import qualified Java.Util.List as JList
 import qualified Weka.WekaCalls as Helper
+import qualified Weka.Core.FastVector as FV
 
+import Weka.Core (FastVector', FastVector''(..))
 import Java.Util (List')
-import Java.Lang (Object')
+import Java.Lang (Object)
 
 -----------------------------------------------------------------------------
 
@@ -68,7 +73,7 @@ import Data.List (intercalate)
 
 -----------------------------------------------------------------------------
 
---instance JavaClassId
+instance JavaClassID FastVector'' where classId _ = "weka.core.FastVector"
 
 -----------------------------------------------------------------------------
 
@@ -155,5 +160,21 @@ instance JNIS.ArrayResult [JNI.JObject] where
     type ArrayResultComponent [JNI.JObject] = Maybe JNI.JObject
 
     toArrayResult (Right (Just arr)) = liftM (map fromJust) (JNI.toList arr)
+
+
+-----------------------------------------------------------------------------
+
+data JObj = forall o . (Object o) => JObj o
+
+instance JNI.JavaObject JObj where asObject (JObj o) = JNI.asObject o
+instance Object JObj
+
+makeFastVector :: [JObj] -> JNI.Java FastVector'
+makeFastVector objs = do
+    Just fv <- newInstance0 FastVector
+    mapM_  (FV.addElement fv :: JObj -> JNI.Java ()) objs
+    return fv
+
+
 
 
