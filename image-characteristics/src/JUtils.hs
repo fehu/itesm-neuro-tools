@@ -29,6 +29,7 @@ module JUtils (
 
 , JList
 , jObjectsList
+, jStringList
 , appendToJList
 
 , JNI.Java
@@ -134,6 +135,12 @@ appendToJList jList objs = do vs <- mapM (JList.add jList :: JNI.JObject -> JNI.
 jObjectsList :: [JNI.JObject] -> JNI.Java JList
 jObjectsList objs = do Just jList <- Helper.newList
                        appendToJList jList objs
+
+jStringList :: [String] -> JNI.Java (List' JString)
+jStringList strs = do jStrs <- mapM jString strs
+                      Just jList <- Helper.newList
+                      vs <- mapM (JList.add jList :: JString -> JNI.Java Bool) jStrs
+                      return jList
 
 -----------------------------------------------------------------------------
 

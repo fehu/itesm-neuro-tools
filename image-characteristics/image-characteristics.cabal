@@ -37,8 +37,6 @@ library
                        WekaCall.Train
                        WekaCall.Evaluation
                        WekaCall.Filters
---                       WekaCall.Learn
---                       WekaCall.Classify
 
   -- other-modules:
 
@@ -83,23 +81,16 @@ executable wick
                      , time >= 1.2
                      , filepath >= 1.3
                      , directory >= 1.2
+                     , java-bridge >= 0.20160223.1
+                     , weka-bindings >= 0.1
+                     , split >= 0.2.3
 
   other-modules:       WildfireClass
+                       Options
+                       MainChVec
+                       MainTrain
 
   default-language:    Haskell2010
   ghc-options:         -threaded
-
-
-
-executable testWekaCalls
-  hs-source-dirs:      test
-  main-is:             WekaCallTest.hs
-
-  build-depends:       base >=4.8 && <4.9
-                     , image-characteristics
---                     , filepath >= 1.3
-
-  default-language:    Haskell2010
-
 
 

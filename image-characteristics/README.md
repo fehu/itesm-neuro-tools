@@ -13,14 +13,14 @@ Requires:
 
 ```
 	Wildfire Image Classification Kit (WICK)
-	-------------------------------  ----
+	---------------------------------  ----
 
 Conatains tools for 1) image characteristics extraction
                        (descriptive statistics);
                     2) Weka's Multilayer Perceptron model training;
                     3) image classification, using the model.
 
-wick <mode> <source> <target> [help] [verbosity] [save-regions] [name] [no-class] [validate] [save-reports] [configure]
+wick <mode> <source> <target> [help] [verbosity] [save-regions] [name] [no-class] [validate] [x-report] [options] [class]
 
 Positional:
   mode ::
@@ -55,7 +55,7 @@ Optional:
   save-regions <value>
      --save-regions
      [ARFF] Save region images, with assigned class.
-        value :: Text 	--  Saves root directory.
+        value :: Text 	--  root directory
 
   name <value>
      -n --name
@@ -69,17 +69,22 @@ Optional:
   validate <value>
      -x --validate
      [MODEL] Cross validate model.
-        value :: Int 	--  Validation folds.
+        value :: Int 	--  validation folds
 
-  save-reports <value>
-     --save-reports
-     [MODEL] Save validation reports.
-        value :: Text 	--  Reports directory.
+  x-report <value>
+     --x-report
+     [MODEL] Save cross validation report.
+        value :: Text 	--  report file
 
-  configure <value>
-     -C --configure
-     [MODEL] Configure Multilayer Perceptron (see Weka).
-        value :: Text 	--  Configuration should be put in "" quotes to avoid separation.
+  options <value>
+     -o --options
+     [MODEL] Set Multilayer Perceptron options (see Weka).
+        value :: Text 	--  configuration should be put in "" quotes to avoid separation
+
+  class <value>
+     -c --class
+     [MODEL] Set class attribute (default: 'class').
+        value :: Text 	--  class attribute
 
 ```
 
@@ -87,4 +92,6 @@ Optional:
 
 ```
 wick arff  ~/Pictures/wildfire fire1.arff --save-regions reports -n fire-at-X
+
+wick model fire1.arff fire1.model -x 4 --x-report report.log -o "-N 100 -L 0.9 -M 0.9"
 ```

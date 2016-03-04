@@ -19,6 +19,9 @@ module WekaCall.Train (
 -- * Classifiers
 , multilayerPerceptron
 
+-- * Options
+, setOptions
+
 ) where
 
 -----------------------------------------------------------------------------
@@ -26,15 +29,16 @@ module WekaCall.Train (
 import Weka.Core
 import Weka.Classifiers
 import Weka.Classifiers.Functions (MultilayerPerceptron''(..), MultilayerPerceptron')
-import Weka.Classifiers.Functions.MultilayerPerceptron as Perceptron
 
 import qualified Weka.Classifiers.Classifier as Classifier
+import qualified Weka.WekaCalls as Helper
 
 -----------------------------------------------------------------------------
 
 import JUtils
 
 import Data.Maybe (fromJust)
+import Control.Monad
 
 -----------------------------------------------------------------------------
 
@@ -51,6 +55,8 @@ trainModel = Classifier.buildClassifier
 
 
 
+setOptions :: (Classifier c) => c -> [String] -> Java ()
+setOptions c = Helper.setOptions c <=< jStringList
 
 
 

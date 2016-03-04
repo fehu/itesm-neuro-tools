@@ -51,6 +51,12 @@ public class WekaCalls{
       return;
     }
     
+    public static void setOptions(Classifier c, List<String> ops) throws Exception {
+      String[] res = {};
+      c.setOptions(ops.toArray(res));
+      return;
+    }
+    
 //     public static MultiFilter /*appendFilter(MultiFilter mf, Filter f) {
 //       Filter[] fs = mf.getFilters();
 //       ArrayList<Filter> al = new ArrayList<Filter>(Arrays.asList(fs));
