@@ -40,7 +40,8 @@ fixedRegions = FixedColRowRegions{ rRow = 50
                                  , minRegionSize = (100, 100)
                                  }           -- (height, width)
 
-instance RegionsExtractor RGB where foreachRegion = fixedColRowRegions fixedRegions
+instance RegionsExtractor RGB where foreachRegion  = fixedColRowRegions  fixedRegions
+                                    foreachRegion' = fixedColRowRegions' fixedRegions
 
 -- Main
 -----------------------------------------------------------------------------

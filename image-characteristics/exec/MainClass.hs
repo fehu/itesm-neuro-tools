@@ -29,8 +29,11 @@ import Weka.Core (Instances')
 
 import ImgCharacteristics
 import ImgCharacteristics.MainTemplate
+import ImgCharacteristics.GTK.ImageTiles
+import ImgCharacteristics.GTK.FromFriday
 
 import Vision.Image (RGB)
+import Graphics.UI.Gtk
 
 import Data.List (partition)
 import Control.Monad
@@ -48,26 +51,27 @@ mainClass :: (RegionsExtractor RGB) =>
           -> IO ()
 mainClass modelF idir opts verb = do
     imgPaths <- listImages idir
-    imgs <- readImages imgPaths
+    imgs     <- readImages imgPaths
+
+    wTiles <- imageTilesWindow
+
 
     withWekaHomeEnv extraClasspath $ do
         ch <- loadModel $ text2str modelF
 
         classification <- forM imgs
-            $ \(img,file) -> assemble file =<< sequence (foreachRegion img (processRegion ch))
+            $ \(img,file) -> do
+                let (rCount, rSize, foreachR) = foreachRegion' img
+                iTiles <- io $ newImgTiles wTiles rCount rSize
+                a <- assemble file =<< sequence (foreachR (processRegion iTiles ch))
+                io $ waitClick iTiles
+                return a
 
         let (ok, warn) = partition (null . snd) classification
-
---        unless (null ok) $ println "\n\tThe following images are OK:\n"
---        forM_ ok $ println . fst
---
---        unless (null warn) $ println "\n\tThe following images have sign of fire at given regions:\n"
---        forM_ warn $ \(f,rs) -> println $ f ++ '\t': unwords (map show rs)
 
         println $ "\n\tImages: " ++ show (length classification)
                  ++ "\tOK: "     ++ show (length ok)
                  ++ "\tDANGER: " ++ show (length warn)
-
 
 resultStr file regions | null regions = "\nOK\t"     ++ file
                        | otherwise    = "\nDANGER\t" ++ file ++ '\t': unwords (map show regions)
@@ -81,14 +85,23 @@ assemble file classes = do let haveSigns = filter (hasFireSigns . fst) classes
 
 -- | Get class for each region.
 processRegion :: (RegionsExtractor RGB, Classifier c) =>
-                 (c, Instances')
+                 ImageTiles RGB
+              -> (c, Instances')
               -> RGB
               -> (Int,Int)
               -> Java (WildfireClass, (Int, Int))
-processRegion (c, header) ri rxy = do
+processRegion iTiles (c, header) ri rxy = do
     let chs = characteristics descrStatsAll ri
     inst <- makeInstance header chs
-    classifyNom c inst >>= (\x -> return (x, rxy))
+    clazz <- classifyNom c inst
+    io $ setRegion iTiles rxy ri (classColor clazz)
+    return (clazz, rxy)
 
+
+classColor c = case c of Fire         -> Color 255 0   0
+                         Smoke        -> Color 128 128 128
+                         FireAndSmoke -> Color 204 102 0
+                         None         -> Color 0   255 0
+                         _            -> Color 255 255 255
 
 -----------------------------------------------------------------------------

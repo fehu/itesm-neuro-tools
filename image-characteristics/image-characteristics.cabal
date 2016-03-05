@@ -2,7 +2,7 @@
 -- further documentation, see http://haskell.org/cabal/users-guide/
 
 name:                image-characteristics
-version:             0.3.2.0
+version:             0.3.3.0
 synopsis:            Image characteristics extraction
 -- description:
 homepage:            https://github.com/fehu/itesm-neuro-tools/tree/master/image-characteristics
@@ -29,6 +29,7 @@ library
                        ImgCharacteristics.Friday.Extractors
                        ImgCharacteristics.GTK
                        ImgCharacteristics.GTK.FromFriday
+                       ImgCharacteristics.GTK.ImageTiles
                        ImgCharacteristics.WekaData
                        ImgCharacteristics.MainTemplate
                        -- use JNI

@@ -19,6 +19,8 @@ module ImgCharacteristics.GTK (
 --, imagesCInterview
 , ImageToPixbuf(..)
 
+, forkGUI
+
 ) where
 
 
@@ -89,16 +91,22 @@ imagesCInterview showCU = do
 
 instance (ImageToPixbuf img) => RegionsClassesProvider ClassesInterview img where
     regionClass = ciAskClass
-    classProvider showCU = do askVar <- newEmptyMVar
-                              uiThread <- forkOS $ do initGUI
-                                                      ci <- imagesCInterview showCU
-                                                      putMVar askVar ci
-                                                      mainGUI
-                              takeMVar askVar
+    classProvider showCU = forkGUI (imagesCInterview showCU)
+
+
+
+-----------------------------------------------------------------------------
+
+-- | Create a separate GUI thread and wait for the return value.
+forkGUI create = do var <- newEmptyMVar
+                    uiThread <- forkOS $ do initGUI
+                                            c <- create
+                                            putMVar var c
+                                            mainGUI
+                    takeMVar var
 
 
 
 
-
-
+-----------------------------------------------------------------------------
 

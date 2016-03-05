@@ -27,7 +27,7 @@ module ImgCharacteristics (
 , characteristicsFromVec
 
 , RegionsExtractor(..)
-, ForeachRegion
+, ForeachRegion, ForeachRegion'
 , FixedColRowRegions(..)
 
 , Class(..)
@@ -69,7 +69,12 @@ characteristicsFromVec v = CharacteristicsExtractor cs names
 
 type ForeachRegion img = forall a . img -> (img -> (Int, Int) -> a) -> [a]
 
-class RegionsExtractor img where foreachRegion :: ForeachRegion img
+type ForeachRegion' img = forall a . img -> ((Int, Int), (Int,Int), (img -> (Int, Int) -> a) -> [a])
+
+
+
+class RegionsExtractor img where foreachRegion  :: ForeachRegion  img
+                                 foreachRegion' :: ForeachRegion' img
 
 data FixedColRowRegions = FixedColRowRegions { rRow          :: Int
                                              , rCol          :: Int

@@ -19,6 +19,8 @@ module ImgCharacteristics.Friday (
   Img
 , fixedColRowRegions
 
+, fixedColRowRegions'
+
 -- TODO: zero histograms for some images ??
 --, histogram
 --, histogram3
@@ -59,18 +61,29 @@ import Data.Int
 -----------------------------------------------------------------------------
 
 type Img p = Manifest p
---
+
+-----------------------------------------------------------------------------
+
+fixedColRowRegions' :: (Storable p) => FixedColRowRegions
+                                    -> ForeachRegion' (Img p)
+
+fixedColRowRegions' rd img = ((nRow, nCol), (x, y), g)
+    where g f =  do row <- [1..nRow]
+                    col <- [1..nCol]
+                    let region = Rect ((col-1)*x) ((row-1)*y) x y
+                    let img' = crop region img
+                    return $ f img' (row, col)
+
+          ((x, y), nRow, nCol) = finalSize rd img
+
+
+-----------------------------------------------------------------------------
+
 
 fixedColRowRegions :: (Storable p) => FixedColRowRegions -> ForeachRegion (Img p)
-fixedColRowRegions rd img f =
-    do row <- [1..nRow]
-       col <- [1..nCol]
+fixedColRowRegions rd img f = let (_, _, g) = fixedColRowRegions' rd img
+                              in g f
 
-       let region = Rect ((col-1)*x) ((row-1)*y) x y
-       let img' = crop region img
-       return $ f img' (row, col)
-
-    where ((x, y), nRow, nCol) = finalSize rd img
 
 finalSize :: FixedColRowRegions -> Img p -> ((Int, Int), Int, Int)
 finalSize (FixedColRowRegions rRow rCol rMin) img
