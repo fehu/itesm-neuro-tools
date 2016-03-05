@@ -91,7 +91,7 @@ Optional:
      Show classification results in GUI (uses GTK).
 ```
 
-##### Example
+##### Examples
 
 ```
 wick arff  ~/Pictures/wildfire fire1.arff --save-regions reports -n fire-at-X
@@ -103,8 +103,8 @@ wick class fire1.model ~/Pictures/wildfire -G
 
 ### Classes
 
-The classes used are defined in (exec/WildfireClass.hs)[WildfireClass.hs].
-At the moment is defined as follows:
+The classes used are defined in [WildfireClass.hs](exec/WildfireClass.hs).
+At the moment following classes are defined:
 
 ```haskell
 data WildfireClass = Fire
@@ -115,4 +115,4 @@ data WildfireClass = Fire
                    | Unknown
                    deriving (Enum, Bounded, Eq)
 ```
-Show instance is declared apart in order to provide shorter name, like _Fire&Smoke_.
+Show instance is declared apart in order to provide shorter names, like _Fire&Smoke_.
