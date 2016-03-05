@@ -97,4 +97,22 @@ Optional:
 wick arff  ~/Pictures/wildfire fire1.arff --save-regions reports -n fire-at-X
 
 wick model fire1.arff fire1.model -x 4 --x-report report.log -o "-N 100 -L 0.9 -M 0.9"
+
+wick class fire1.model ~/Pictures/wildfire -G
 ```
+
+### Classes
+
+The classes used are defined in (exec/WildfireClass.hs)[WildfireClass.hs].
+At the moment is defined as follows:
+
+```haskell
+data WildfireClass = Fire
+                   | Smoke
+                   | FireAndSmoke
+                   | None
+                   | Ignore
+                   | Unknown
+                   deriving (Enum, Bounded, Eq)
+```
+Show instance is declared apart in order to provide shorter name, like _Fire&Smoke_.
