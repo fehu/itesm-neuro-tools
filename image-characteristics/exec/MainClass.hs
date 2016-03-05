@@ -16,10 +16,11 @@
 module MainClass where
 
 
-import CArgs
+import CArgs as CArgs
 
 import WildfireClass
 import MainCommon
+import Options
 
 import JUtils
 import WekaCall
@@ -36,6 +37,7 @@ import Vision.Image (RGB)
 import Graphics.UI.Gtk
 
 import Data.List (partition)
+import Data.Maybe (isJust)
 import Control.Monad
 
 -----------------------------------------------------------------------------
@@ -53,7 +55,10 @@ mainClass modelF idir opts verb = do
     imgPaths <- listImages idir
     imgs     <- readImages imgPaths
 
-    wTiles <- imageTilesWindow
+    let showGUI = isJust $ CArgs.get opts classificationGUI
+
+    mbWTiles <- if showGUI then fmap Just imageTilesWindow
+                           else return Nothing
 
 
     withWekaHomeEnv extraClasspath $ do
@@ -62,9 +67,9 @@ mainClass modelF idir opts verb = do
         classification <- forM imgs
             $ \(img,file) -> do
                 let (rCount, rSize, foreachR) = foreachRegion' img
-                iTiles <- io $ newImgTiles wTiles rCount rSize
-                a <- assemble file =<< sequence (foreachR (processRegion iTiles ch))
-                io $ waitClick iTiles
+                mbITiles <- forM mbWTiles $ \wTiles -> io $ newImgTiles wTiles rCount rSize
+                a <- assemble file =<< sequence (foreachR (processRegion mbITiles ch))
+                forM_ mbITiles (io . waitClick)
                 return a
 
         let (ok, warn) = partition (null . snd) classification
@@ -85,16 +90,16 @@ assemble file classes = do let haveSigns = filter (hasFireSigns . fst) classes
 
 -- | Get class for each region.
 processRegion :: (RegionsExtractor RGB, Classifier c) =>
-                 ImageTiles RGB
+                 Maybe (ImageTiles RGB)
               -> (c, Instances')
               -> RGB
               -> (Int,Int)
               -> Java (WildfireClass, (Int, Int))
-processRegion iTiles (c, header) ri rxy = do
+processRegion mbITiles (c, header) ri rxy = do
     let chs = characteristics descrStatsAll ri
     inst <- makeInstance header chs
     clazz <- classifyNom c inst
-    io $ setRegion iTiles rxy ri (classColor clazz)
+    forM_ mbITiles (\iTiles -> io $ setRegion iTiles rxy ri (classColor clazz))
     return (clazz, rxy)
 
 

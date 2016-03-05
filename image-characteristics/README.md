@@ -20,7 +20,7 @@ Conatains tools for 1) image characteristics extraction
                     2) Weka's Multilayer Perceptron model training;
                     3) image classification, using the model.
 
-wick <mode> <source> <target> [help] [verbosity] [save-regions] [name] [no-class] [validate] [x-report] [options] [class]
+wick <mode> <source> <target> [help] [verbosity] [save-regions] [name] [no-class] [validate] [x-report] [options] [class] [gui]
 
 Positional:
   mode ::
@@ -36,7 +36,7 @@ Positional:
     Depending on the <mode>:
     	1. arff  -- destination *.arff file;
     	2. model -- destination *.model file;
-    	3. class -- *.arff file with data to classify.
+    	3. class -- images directory.
 
 Optional:
 
@@ -86,6 +86,9 @@ Optional:
      [MODEL] Set class attribute (default: 'class').
         value :: Text 	--  class attribute
 
+  gui
+     -G --gui
+     Show classification results in GUI (uses GTK).
 ```
 
 ##### Example

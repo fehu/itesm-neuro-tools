@@ -60,7 +60,7 @@ arguments = CArgs{
       , Opt nnetSettings
       , Opt classAttribute
         -- CLASS
-
+      , Opt classificationGUI
     ]
 }
 
@@ -147,4 +147,7 @@ classAttribute = optional "c" ["class"] ["[MODEL] Set class attribute (default: 
 
 ---- 3) CLASS
 --------------
+
+classificationGUI = optionalFlag "G" ["gui"] ["Show classification results in GUI (uses GTK)."]
+
 
