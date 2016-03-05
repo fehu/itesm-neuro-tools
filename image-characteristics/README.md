@@ -88,7 +88,7 @@ Optional:
 
   gui
      -G --gui
-     Show classification results in GUI (uses GTK).
+     [CLASS] Show classification results in GUI (uses GTK).
 ```
 
 ##### Examples
