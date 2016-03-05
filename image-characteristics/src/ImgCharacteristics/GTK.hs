@@ -55,7 +55,7 @@ imagesCInterview showCU = do
     let classes' = [minBound..maxBound]
         classes  = if showCU then classes'
                              else filter (classUnknown /=) classes'
-    bBox  <- hButtonBoxNew
+    bBox  <- vButtonBoxNew
     cBtns <- sequence $ do c <- classes
                            return $ do btn <- buttonNewWithLabel (show c)
                                        btn `on` buttonActivated $ putMVar cVar c
