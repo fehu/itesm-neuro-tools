@@ -102,11 +102,14 @@ processRegion mbITiles (c, header) ri rxy = do
     forM_ mbITiles (\iTiles -> io $ setRegion iTiles rxy ri (classColor clazz))
     return (clazz, rxy)
 
+-----------------------------------------------------------------------------
 
-classColor c = case c of Fire         -> Color 255 0   0
-                         Smoke        -> Color 128 128 128
-                         FireAndSmoke -> Color 204 102 0
-                         None         -> Color 0   255 0
-                         _            -> Color 255 255 255
+classColor c = case c of Fire         -> Color 255 0   0    -- red
+                         FireAndSmoke -> Color 153 76  0    -- orange
+                         BrightSmoke  -> Color 204 102 0    -- dark-orange
+                         Smoke        -> Color 128 128 128  -- grey
+                         SmokeOrSky   -> Color 51  153 255  -- light-blue
+                         None         -> Color 0   255 0    -- green
+                         _            -> Color 255 255 255  -- black
 
 -----------------------------------------------------------------------------

@@ -108,11 +108,13 @@ At the moment following classes are defined:
 
 ```haskell
 data WildfireClass = Fire
-                   | Smoke
                    | FireAndSmoke
+                   | BrightSmoke
+                   | Smoke
+                   | SmokeOrSky
                    | None
                    | Ignore
                    | Unknown
                    deriving (Enum, Bounded, Eq)
 ```
-Show instance is declared apart in order to provide shorter names, like _Fire&Smoke_.
+Show instance is declared apart in order to provide different names, like _Fire & Smoke_.
