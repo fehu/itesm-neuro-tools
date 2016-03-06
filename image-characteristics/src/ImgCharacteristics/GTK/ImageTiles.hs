@@ -27,8 +27,11 @@ import Graphics.UI.Gtk.General.StyleContext
 import Graphics.UI.Gtk.General.CssProvider
 
 import Control.Concurrent.MVar
+import Control.Monad
+import Control.Monad.Reader (liftIO)
 
 import Data.List (intercalate)
+import qualified Data.Text as Text
 
 import System.Exit
 
@@ -62,16 +65,26 @@ imageTilesWindow = forkGUI $ do
 
     containerSetBorderWidth wTable 10
 
-    closeVar <- newEmptyMVar
-    bNext `on` buttonActivated $ putMVar closeVar ()
+    let lockUI   = widgetSetSensitive bNext False
+        unlockUI = widgetSetSensitive bNext True
+        isLocked = not <$> widgetIsSensitive bNext
+
+    nextVar <- newEmptyMVar
+    let next = void $ tryPutMVar nextVar ()
+    bNext  `on` buttonActivated $ next
+
+    -- press Return
+    let kVal = keyFromName $ Text.pack "Return"
+    window `on` keyPressEvent $ do k <- eventKeyVal
+                                   liftIO $ do locked <- isLocked
+                                               when (kVal == k && not locked) next
+                                   return True
 
     let clearTable = containerForeach wTable $ \w -> do containerRemove wTable w
                                                         widgetDestroy w
-        lockUI   = widgetSetSensitive bNext False
-        unlockUI = widgetSetSensitive bNext True
 
         waitForClick = do postGUISync unlockUI
-                          takeMVar closeVar
+                          takeMVar nextVar
                           postGUISync lockUI
 
     on window objectDestroy exitFailure
