@@ -32,6 +32,7 @@ library
                        ImgCharacteristics.GTK.ImageTiles
                        ImgCharacteristics.WekaData
                        ImgCharacteristics.MainTemplate
+                       ImgCharacteristics.ParallelExec
                        -- use JNI
                        JUtils
                        WekaCall

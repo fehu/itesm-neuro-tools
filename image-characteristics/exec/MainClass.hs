@@ -32,6 +32,7 @@ import ImgCharacteristics
 import ImgCharacteristics.MainTemplate
 import ImgCharacteristics.GTK.ImageTiles
 import ImgCharacteristics.GTK.FromFriday
+import ImgCharacteristics.ParallelExec
 
 import Vision.Image (RGB)
 import Graphics.UI.Gtk
@@ -42,6 +43,8 @@ import Control.Monad
 
 -----------------------------------------------------------------------------
 
+instance IOAlias Java where toIO   = runJava
+                            fromIO = io
 
 -- | Classify given images, based on its regions classification,
 --   using the provided model.
@@ -56,6 +59,7 @@ mainClass modelF idir opts verb = do
     imgs     <- readImages imgPaths
 
     let showGUI = isJust $ CArgs.get opts classificationGUI
+--        runPar  = CArgs.get opts classifyParallel
 
     mbWTiles <- if showGUI then fmap Just imageTilesWindow
                            else return Nothing
@@ -67,6 +71,7 @@ mainClass modelF idir opts verb = do
         classification <- forM imgs
             $ \(img,file) -> do
                 let (rCount, rSize, foreachR) = foreachRegion' img
+
                 mbITiles <- forM mbWTiles $ \wTiles -> io $ newImgTiles wTiles rCount rSize
                 a <- assemble file =<< sequence (foreachR (processRegion mbITiles ch))
                 forM_ mbITiles (io . waitClick)

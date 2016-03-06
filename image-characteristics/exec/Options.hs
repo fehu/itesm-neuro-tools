@@ -61,6 +61,7 @@ arguments = CArgs{
       , Opt classAttribute
         -- CLASS
       , Opt classificationGUI
+--      , Opt classifyParallel
     ]
 }
 
@@ -151,4 +152,7 @@ classAttribute = optional "c" ["class"] ["[MODEL] Set class attribute (default: 
 classificationGUI = optionalFlag "G" ["gui"]
                                 ["[CLASS] Show classification results in GUI (uses GTK)."]
 
+--classifyParallel :: Optional1 Int
+--classifyParallel = optional "|" ["par"] ["[CLASS] Run classification in parallel threads."]
+--                                ["number of threads"]
 

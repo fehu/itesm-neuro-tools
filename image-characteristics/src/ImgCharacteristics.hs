@@ -69,12 +69,16 @@ characteristicsFromVec v = CharacteristicsExtractor cs names
 
 type ForeachRegion img = forall a . img -> (img -> (Int, Int) -> a) -> [a]
 
+-- | Given an image, returns 1) number of regions; 2) region's size;
+--    3) /foreachRegion/ function, that is 'ForeachRegion' with first argument applied.
 type ForeachRegion' img = forall a . img -> ((Int, Int), (Int,Int), (img -> (Int, Int) -> a) -> [a])
+
 
 
 
 class RegionsExtractor img where foreachRegion  :: ForeachRegion  img
                                  foreachRegion' :: ForeachRegion' img
+
 
 data FixedColRowRegions = FixedColRowRegions { rRow          :: Int
                                              , rCol          :: Int
