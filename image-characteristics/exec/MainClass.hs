@@ -110,10 +110,7 @@ processRegion mbITiles (c, header) ri rxy = do
 -----------------------------------------------------------------------------
 
 classColor c = case c of Fire         -> Color 255 0   0    -- red
-                         FireAndSmoke -> Color 153 76  0    -- orange
-                         BrightSmoke  -> Color 204 102 0    -- dark-orange
-                         Smoke        -> Color 128 128 128  -- grey
-                         SmokeOrSky   -> Color 51  153 255  -- light-blue
+                         Smoke        -> Color 204 102 0    -- dark-orange
                          None         -> Color 0   255 0    -- green
                          _            -> Color 255 255 255  -- black
 

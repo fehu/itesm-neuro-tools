@@ -29,20 +29,27 @@ import qualified Weka.Core.Instances as Instances
 import qualified Weka.Classifiers.Meta.FilteredClassifier as FC
 
 import System.Directory
-
+import GHC.Float
 import Control.Monad
+import Control.Arrow
 
 import Data.List.Split (splitOn)
+import qualified Data.Map as Map
+
+import ImgCharacteristics
+import ImgCharacteristics.Tikz.ConfusionDiagram
+import WildfireClass
 
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
 -- | Train a model and write it to file.
 mainTrain src t opts verb = do
-    let classAttr   = maybe "class" text2str (opts `get` Opts.classAttribute)
+    let classAttr   = "class"
         modelName   = "model"
         xValidation = opts `get` Opts.crossValidate
         saveReports = fmap text2str $ opts `get` Opts.saveReports
+        writeTikz   = fmap text2str $ opts `get` Opts.confusionTikzReport
         nnetOptions = fmap (splitOn " " . text2str) $ opts `get` Opts.nnetSettings
 
         classifier  = multilayerPerceptron
@@ -68,11 +75,19 @@ mainTrain src t opts verb = do
                println $ "wrote model '" ++ modelName ++ "' to " ++ target
 
                -- Cross-Validation: Save reports
-               let reportsOut rs js = let s = buildReports "\n\n\n" defaultReporter js
-                                      in mapM_ ($ s) rs
-                   extractResult = maybe (reportsOut [reportStdOut])
-                                         (\f -> reportsOut [reportStdOut, reportFoFile f])
-                                         saveReports
+               let classes  = map (id &&& classColor) (classDomain :: [WildfireClass])
+                   toTikz   = classesConfusion classes . map (map double2Int)
+                   reporter = defaultReporter `zipReporters` fmap toTikz confusionReporter
+
+                   reportsOut outTxt outTikz js =
+                           do (rTxt, rTikz) <- buildReports reporter js
+                              forM_ outTxt  ($ mapM toString rTxt)
+                              forM_ outTikz ($ return [rTikz])
+
+                   reportsTxt  = reportStdOut : maybe [] (return . reportFoFile) saveReports
+                   reportsTikz = maybe [] (return . reportFoFile) writeTikz
+
+                   extractResult     = reportsOut reportsTxt reportsTikz
                    prepareEvaluation = const $ return ()
 
                -- Cross-Validation
@@ -90,6 +105,13 @@ mainTrain src t opts verb = do
                     println "Cross validation (with 'Ignore' instances removed)"
                     crossValidation cv instances'
 
+
+-----------------------------------------------------------------------------
+-- for tikz diagram
+classColor c = case c of Fire         -> "red"
+                         Smoke        -> "orange!50!black"
+                         None         -> "green!50!black"
+                         _            -> "black"
 
 -----------------------------------------------------------------------------
 

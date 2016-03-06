@@ -95,6 +95,10 @@ instance (Show n, Show c) => Show (LearnDataEntry l n c) where
 
 
 class (Show c, Enum c, Bounded c, Eq c) => Class c where classUnknown :: c
+                                                         classDomain  :: [c]
+
+                                                         classDomain = filter (classUnknown /=)
+                                                                       [minBound..maxBound]
 
 class RegionsClassesProvider p img where
     classProvider :: (Class class') => Bool -- ^ show classUnknown?

@@ -21,12 +21,19 @@ module WekaCall.Evaluation (
 
 -- * Extract Result
 , WekaReportBuilder(..)
+, wekaReportBuilder
 , wekaReportBuilder'
 , buildReports
 
+-- * Reporters ops
+
+, zipReporters
+
 -- * Reporters
+
 , defaultReporter
 , predictionsReporter
+, confusionReporter
 
 -- * Reports IO
 , reportStdOut
@@ -47,7 +54,11 @@ import qualified Weka.Core.Instance  as Instance
 import qualified Weka.Core.Attribute as Attribute
 import qualified Weka.Core.FastVector as FastVector
 import qualified Java.Util as Util
+import qualified Util.MatrixWrapper as MW
 import qualified Weka.WekaCalls as Helper
+import Java.Lang.Double (doubleValue)
+import Java.Lang (Double')
+import Util (MatrixWrapper')
 
 -----------------------------------------------------------------------------
 
@@ -62,7 +73,7 @@ import Control.Monad
 import Data.Word
 import Data.Int
 import Data.Maybe (fromJust)
-import Data.List (intersperse)
+import Data.List (intercalate)
 import Data.Array
 
 import GHC.Float (double2Int)
@@ -109,23 +120,25 @@ crossValidation v insts = do Just evalClass  <- jClass Evaluation
 -- Extract Result --
 
 
-newtype WekaReportBuilder = WekaReportBuilder  [Evaluation' -> Java String]
+newtype WekaReportBuilder r = WekaReportBuilder  (Evaluation' -> Java r)
 
-wekaReportBuilder' :: [Evaluation' -> Java (Maybe JString)] -> WekaReportBuilder
-wekaReportBuilder' = WekaReportBuilder . map ((JNI.toString . fromJust) <=<)
+wekaReportBuilder :: [Evaluation' -> Java r] -> WekaReportBuilder [r]
+wekaReportBuilder es = WekaReportBuilder $ \e -> mapM ($ e) es
 
 
-instance Monoid WekaReportBuilder where
-    mempty = WekaReportBuilder []
-    mappend (WekaReportBuilder a) (WekaReportBuilder b) = WekaReportBuilder (a ++ b)
+wekaReportBuilder' :: [Evaluation' -> Java (Maybe r)] -> WekaReportBuilder [r]
+wekaReportBuilder' = wekaReportBuilder . map ((return . fromJust) <=<)
 
-buildReports :: String -- reports separator
-             -> WekaReportBuilder
-             -> Evaluation'
-             -> Java String
-buildReports sep (WekaReportBuilder reps) ev = do
-    reports <- mapM ($ ev) reps
-    return $ concat reports
+instance Functor WekaReportBuilder where
+    fmap f (WekaReportBuilder gs) = WekaReportBuilder (fmap f . gs)
+
+
+buildReports :: WekaReportBuilder r -> Evaluation' -> Java r
+buildReports (WekaReportBuilder f) = f
+
+zipReporters :: WekaReportBuilder a -> WekaReportBuilder b -> WekaReportBuilder (a,b)
+zipReporters (WekaReportBuilder a) (WekaReportBuilder b) =
+    WekaReportBuilder $ \e -> (,) <$> a e <*> b e
 
 
 -----------------------------------------------------------------------------
@@ -135,7 +148,18 @@ defaultReporter = wekaReportBuilder' [ flip Evaluation.toSummaryString'' True
                                      , Evaluation.toClassDetailsString
                                      ]
 
-predictionsReporter = WekaReportBuilder [
+confusionReporter :: WekaReportBuilder [[Double]]
+confusionReporter = WekaReportBuilder $ (toList . fromJust) <=< Helper.wrappedConfusionMatrix
+    where toList :: MatrixWrapper' Double' -> Java [[Double]]
+          toList m = do d1 <- MW.dim1 m
+                        d2 <- MW.dim2 m
+                        sequence $ do i <- [0 .. d1-1] :: [Int32]
+                                      return . sequence
+                                             $ do j <- [0 .. d2-1] :: [Int32]
+                                                  return $ MW.get m i j >>= doubleValue . fromJust
+
+
+predictionsReporter = wekaReportBuilder [
         Evaluation.predictions
     >=> ((FastVector.toArray :: FastVector' -> Java [JNI.JObject]) . fromJust)
     >=> mapM JNI.toString
@@ -144,11 +168,13 @@ predictionsReporter = WekaReportBuilder [
 
 -----------------------------------------------------------------------------
 
-reportStdOut :: Java String -> Java ()
-reportStdOut = (println =<<)
+rsep = replicate 3 '\n'
 
-reportFoFile :: FilePath -> Java String -> Java ()
-reportFoFile path = (io . writeFile path =<<)
+reportStdOut :: Java [String] -> Java ()
+reportStdOut = (println . intercalate rsep =<<)
+
+reportFoFile :: FilePath -> Java [String] -> Java ()
+reportFoFile path = (io . writeFile path . intercalate rsep =<<)
 
 -----------------------------------------------------------------------------
 

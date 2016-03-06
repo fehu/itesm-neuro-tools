@@ -58,7 +58,7 @@ arguments = CArgs{
       , Opt crossValidate
       , Opt saveReports
       , Opt nnetSettings
-      , Opt classAttribute
+      , Opt confusionTikzReport
         -- CLASS
       , Opt classificationGUI
 --      , Opt classifyParallel
@@ -135,15 +135,16 @@ saveReports = optional "" ["x-report"]
                           ["report file"]
 
 
+confusionTikzReport :: Optional1 Text
+confusionTikzReport = optional "" ["tikz-confusion"]
+                                  ["[MODEL] Write confusion diagram Tikz source (LaTeX)."]
+                                  ["diagram file"]
+
+
 nnetSettings :: Optional1 Text
 nnetSettings = optional "o" ["options"]
                             ["[MODEL] Set Multilayer Perceptron options (see Weka)."]
                 ["configuration should be put in \"\" quotes to avoid separation"]
-
-
-classAttribute :: Optional1 Text
-classAttribute = optional "c" ["class"] ["[MODEL] Set class attribute (default: 'class')."]
-                                        ["class attribute"]
 
 
 ---- 3) CLASS

@@ -20,7 +20,7 @@ Conatains tools for 1) image characteristics extraction
                     2) Weka's Multilayer Perceptron model training;
                     3) image classification, using the model.
 
-wick <mode> <source> <target> [help] [verbosity] [save-regions] [name] [no-class] [validate] [x-report] [options] [class] [gui]
+wick <mode> <source> <target> [help] [verbosity] [save-regions] [name] [no-class] [validate] [x-report] [options] [tikz-confusion] [gui]
 
 Positional:
   mode ::
@@ -81,20 +81,21 @@ Optional:
      [MODEL] Set Multilayer Perceptron options (see Weka).
         value :: Text 	--  configuration should be put in "" quotes to avoid separation
 
-  class <value>
-     -c --class
-     [MODEL] Set class attribute (default: 'class').
-        value :: Text 	--  class attribute
+  tikz-confusion <value>
+     --tikz-confusion
+     [MODEL] Write confusion diagram Tikz source (LaTeX).
+        value :: Text 	--  diagram file
 
   gui
      -G --gui
      [CLASS] Show classification results in GUI (uses GTK).
+
 ```
 
 ##### Examples
 
 ```
-wick arff  ~/Pictures/wildfire fire1.arff --save-regions reports -n fire-at-X
+wick arff  ~/Pictures/wildfire fire1.arff --save-regions reports --tikz-confusion confusion.tikz.tex
 
 wick model fire1.arff fire1.model -x 4 --x-report report.log -o "-N 100 -L 0.9 -M 0.9"
 
@@ -107,13 +108,10 @@ The classes used are defined in [WildfireClass.hs](exec/WildfireClass.hs).
 At the moment following classes are defined:
 
 ```haskell
-data WildfireClass = Fire
-                   | FireAndSmoke
-                   | BrightSmoke
-                   | Smoke
-                   | SmokeOrSky
-                   | None
-                   | Ignore
+data WildfireClass = Fire   -- ^ Region contains fire.
+                   | Smoke  -- ^ Region contains smoke, but no sign fire.
+                   | None   -- ^ Region contains neither.
+                   | Ignore -- ^ Do not use the region for training.
                    | Unknown
                    deriving (Enum, Bounded, Eq)
 ```

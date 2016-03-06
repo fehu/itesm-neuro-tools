@@ -15,7 +15,6 @@ module WildfireClass (
 
   WildfireClass(..)
 , hasFireSigns
-, mighHaveFireSigns
 
 ) where
 
@@ -24,28 +23,22 @@ import ImgCharacteristics
 
 -----------------------------------------------------------------------------
 
-data WildfireClass = Fire
-                   | FireAndSmoke
-                   | BrightSmoke
-                   | Smoke
-                   | SmokeOrSky
-                   | None
-                   | Ignore
+
+data WildfireClass = Fire   -- ^ Region contains fire.
+                   | Smoke  -- ^ Region contains smoke, but no sign fire.
+                   | None   -- ^ Region contains neither.
+                   | Ignore -- ^ Do not use the region for training.
                    | Unknown
                    deriving (Enum, Bounded, Eq)
 
 instance Show WildfireClass where show Fire = "Fire"
-                                  show FireAndSmoke = "Fire & Smoke"
-                                  show BrightSmoke = "Bright Smoke"
                                   show Smoke = "Smoke"
-                                  show SmokeOrSky = "Smoke or Sky"
-                                  show None = "No Sign of Fire"
+                                  show None = "Neither"
                                   show Ignore = "Ignore"
                                   show Unknown = "?"
 
 instance Class WildfireClass where classUnknown = Unknown
 
 
-hasFireSigns x = x == Fire || x == Smoke || x == FireAndSmoke || x == BrightSmoke
+hasFireSigns x = x == Fire || x == Smoke
 
-mighHaveFireSigns x = x == SmokeOrSky

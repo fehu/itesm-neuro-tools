@@ -2,7 +2,7 @@
 -- further documentation, see http://haskell.org/cabal/users-guide/
 
 name:                image-characteristics
-version:             0.4.0.0
+version:             0.4.1.0
 synopsis:            Image characteristics extraction
 -- description:
 homepage:            https://github.com/fehu/itesm-neuro-tools/tree/master/image-characteristics
@@ -33,6 +33,7 @@ library
                        ImgCharacteristics.WekaData
                        ImgCharacteristics.MainTemplate
                        ImgCharacteristics.ParallelExec
+                       ImgCharacteristics.Tikz.ConfusionDiagram
                        -- use JNI
                        JUtils
                        WekaCall
@@ -87,6 +88,7 @@ executable wick
                      , java-bridge >= 0.20160223.1
                      , weka-bindings >= 0.1
                      , split >= 0.2.3
+                     , containers > 0.5
 
   other-modules:       WildfireClass
                        Options

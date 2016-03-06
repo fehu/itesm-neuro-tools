@@ -13,12 +13,14 @@ import weka.filters.MultiFilter;
 import weka.filters.Filter;
 
 import util.Pair;
+import util.MatrixWrapper;
 
 import java.util.Random;
 import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.lang.Double;
 
 public class WekaCalls{
 
@@ -80,6 +82,14 @@ public class WekaCalls{
     
     public static Instance newInstance(int numAttributes){
       return new Instance(numAttributes);
+    }
+    
+    public static MatrixWrapper<Double> wrappedConfusionMatrix(Evaluation eval){
+      return new MatrixWrapper<Double> (
+        Arrays.stream(eval.confusionMatrix())
+          .map(arr -> Arrays.stream(arr).mapToObj(d -> new Double(d)).toArray(Double[]::new))
+          .toArray(Double[][]::new)
+        );
     }
     
 //     public static MultiFilter /*appendFilter(MultiFilter mf, Filter f) {
