@@ -67,6 +67,7 @@ instance (RegionsExtractor img, Eq img, IOAlias m) => RegionsExtractorPar m img 
 
 -----------------------------------------------------------------------------
 
+-- | Run in parallel
 inParallel :: (Eq a, IOAlias m) =>
               Int               -- ^ Executor pool size.
            -> (m () -> m ())    -- ^ Fork executor thread.
@@ -88,14 +89,20 @@ inParallel' :: (Eq a) =>
 inParallel' poolSize f = inParallel poolSize (void . forkIO) (return ()) (const f)
 
 
+-----------------------------------------------------------------------------
+
 usedThreadDelay = 10 -- millis
+
+-----------------------------------------------------------------------------
+
 
 parrun :: (Eq a, IOAlias m) => [Executor m c a b] -> [a] -> m [b]
 parrun pool args = do e <- newExecution pool args
+                      fromIO . atomically $ writeTVar (execTerminate e) True
                       parrun' e []
                       fromIO $ takeMVar $ execOutputs e
 
-
+-- | Coordinates 'Executor's.
 parrun' :: (Eq a, IOAlias m) => Execution m c a b -> [b] -> m ()
 parrun' e acc = do
     (args, terminate) <- fromIO . atomically $ do arg <- readTVar $ execInputs e
@@ -126,10 +133,17 @@ parrun' e acc = do
     fromIO $ threadDelay usedThreadDelay
     let acc' = res ++ acc
     let recC = parrun' e acc'
+    -- update input args
     fromIO . atomically $ writeTVar (execInputs e) args'
     if null args then do fin <- fromIO $ liftM and $ mapM doesNothing pool
-                         if fin then fromIO . putMVar (execOutputs e) $ reverse acc'
-                                else recC
+                         if fin
+                            then do fromIO . putMVar (execOutputs e) $ reverse acc'
+                                    let termIfNeeded ex = do term <- terminated ex
+                                                             unless term $ writeInput ex ETerminate
+                                                             return term
+                                    fin <- and <$> mapM (fromIO . termIfNeeded) pool
+                                    unless fin recC
+                            else recC
                  else recC
 
 -----------------------------------------------------------------------------
@@ -170,12 +184,14 @@ newExecutor f init = do ma <- newEmptyMVar
                         c  <- newIORef Nothing
                         return $ Executor f ma mb w t c init
 
+
 writeInput = putMVar . execInput
 readOutput = tryTakeMVar . execOutput
 doesNothing = readTVarIO . execFinished
 waitingInput = isEmptyMVar . execInput
+terminated = readTVarIO . execTerminated
 
-
+-- | Execution loop.
 runExecutor :: (IOAlias m) => Executor m c a b -> m ()
 runExecutor e = do -- Initialize if needed
                    ctx' <- fromIO . readIORef $ execContext e
