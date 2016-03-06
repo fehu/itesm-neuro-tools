@@ -18,6 +18,7 @@ module JUtils (
   initJava
 , wekaHomeEnv
 , withWekaHomeEnv
+, withWekaHomeEnv'
 
 
 , JavaClassID(..)
@@ -64,12 +65,19 @@ import Java.Lang (Object)
 
 -----------------------------------------------------------------------------
 
+import ImgCharacteristics.ParallelExec
+
 import System.Environment
 import System.FilePath
 
 import Control.Monad (liftM)
 import Data.Maybe (fromJust)
 import Data.List (intercalate)
+
+-----------------------------------------------------------------------------
+
+instance IOAlias JNI.Java where toIO   = JNI.runJava
+                                fromIO = JNI.io
 
 -----------------------------------------------------------------------------
 
@@ -87,10 +95,14 @@ initJava wekaHome extraClassPath = do
 -- | Get @WEKA_HOME@ environment variable.
 wekaHomeEnv = lookupEnv "WEKA_HOME"
 
-withWekaHomeEnv extraClasspath java = do
+withWekaHomeEnv :: [String] -> JNI.Java a -> IO a
+withWekaHomeEnv extraClasspath java = ($ java) =<< withWekaHomeEnv' extraClasspath
+
+withWekaHomeEnv' :: [String] -> IO (JNI.Java a -> IO a)
+withWekaHomeEnv' extraClasspath = do
                           Just wekaHome <- wekaHomeEnv
                           initJava wekaHome extraClasspath
-                          JNI.runJava java
+                          return JNI.runJava
 
 -----------------------------------------------------------------------------
 

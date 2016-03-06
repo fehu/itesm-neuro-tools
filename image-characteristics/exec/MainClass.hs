@@ -43,9 +43,6 @@ import Control.Monad
 
 -----------------------------------------------------------------------------
 
-instance IOAlias Java where toIO   = runJava
-                            fromIO = io
-
 -- | Classify given images, based on its regions classification,
 --   using the provided model.
 mainClass :: (RegionsExtractor RGB) =>

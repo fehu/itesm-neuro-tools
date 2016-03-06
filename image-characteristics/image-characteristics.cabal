@@ -2,7 +2,7 @@
 -- further documentation, see http://haskell.org/cabal/users-guide/
 
 name:                image-characteristics
-version:             0.4.1.1
+version:             0.4.1.2
 synopsis:            Image characteristics extraction
 -- description:
 homepage:            https://github.com/fehu/itesm-neuro-tools/tree/master/image-characteristics
@@ -102,4 +102,34 @@ executable wick
   default-language:    Haskell2010
   ghc-options:         -threaded
 
+
+executable test
+  hs-source-dirs:      exec
+  main-is:             Test.hs
+
+  build-depends:       base >=4.8 && <4.9
+                     , image-characteristics
+                     , CommandArgs >= 0.1.1
+                     , JuicyPixels >= 3
+                     , friday-juicypixels == 0.1.1
+                     , friday == 0.2.2.0
+                     , Nat >= 0.1.3
+                     , gtk3 >= 0.14
+                     , time >= 1.2
+                     , filepath >= 1.3
+                     , directory >= 1.2
+                     , java-bridge >= 0.20160223.1
+                     , weka-bindings >= 0.1
+                     , split >= 0.2.3
+                     , containers > 0.5
+
+  other-modules:       WildfireClass
+                       Options
+                       MainCommon
+                       MainChVec
+                       MainTrain
+                       MainClass
+
+  default-language:    Haskell2010
+  ghc-options:         -threaded
 
