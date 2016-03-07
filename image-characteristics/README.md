@@ -1,6 +1,8 @@
 Image Characteristics Extractor
 ===============================
 
+[Documentation](http://fehu.github.io/itesm-neuro-tools/docs/index.html)
+
 Requires:
 
 * [java-bridge fork](https://github.com/fehu/haskell-java-bridge-fork)
