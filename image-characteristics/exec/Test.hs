@@ -10,13 +10,18 @@ import qualified Foreign.Java as J
 import Data.Int
 import Control.Monad
 
-main = runJava $ inParallel 2 (void . J.forkJava) init f ([10..20] :: [Int32])
+
+main = runJava $ do e <- parNew 4 (void . J.forkJava) init f ([10..20] :: [Int32])
+                    parFork e
+                    parWait e
+                    parTerminate e
+                    parAppendArgs e [30..40]
+                    parWait e
     where init :: Java (Java a -> Java a, [String])
           init = fromIO $ do g <- (fromIO .) <$> withWekaHomeEnv' extraClasspath
                              return (g, [])
 
           f (f,_) v = f $ do Just s <- I.toHexString v
                              println =<< toString s
-
 
 extraClasspath = [ "java/classes" ]
