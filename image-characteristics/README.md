@@ -6,6 +6,7 @@ Requires:
 * [java-bridge fork](https://github.com/fehu/haskell-java-bridge-fork)
 * [CommandArgs] (https://github.com/fehu/CommandArgs)
 * [Nat] (https://github.com/fehu/HNat)
+* [EitherProjections] (https://github.com/fehu/EitherProjections)
 * [Weka Data] (https://github.com/fehu/min-dat--weka-data)
 
 
