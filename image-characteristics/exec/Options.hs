@@ -61,7 +61,7 @@ arguments = CArgs{
       , Opt confusionTikzReport
         -- CLASS
       , Opt classificationGUI
---      , Opt classifyParallel
+      , Opt classifyParallel
     ]
 }
 
@@ -153,7 +153,7 @@ nnetSettings = optional "o" ["options"]
 classificationGUI = optionalFlag "G" ["gui"]
                                 ["[CLASS] Show classification results in GUI (uses GTK)."]
 
---classifyParallel :: Optional1 Int
---classifyParallel = optional "|" ["par"] ["[CLASS] Run classification in parallel threads."]
---                                ["number of threads"]
+classifyParallel :: Optional1 Int
+classifyParallel = optional "" ["par"] ["[CLASS] Run classification in parallel threads (experimental)."]
+                               ["number of threads"]
 

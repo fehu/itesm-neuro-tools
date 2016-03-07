@@ -27,6 +27,7 @@ module ImgCharacteristics (
 , characteristicsFromVec
 
 , RegionsExtractor(..)
+, RegionsCount, RegionsSize
 , ForeachRegion, ForeachRegion'
 , FixedColRowRegions(..)
 
@@ -67,11 +68,19 @@ characteristicsFromVec v = CharacteristicsExtractor cs names
 
 -----------------------------------------------------------------------------
 
-type ForeachRegion img = forall a . img -> (img -> (Int, Int) -> a) -> [a]
+type RegionsCount = (Int, Int)
+type RegionsSize  = (Int, Int)
+
+type ForeachRegionFunc a b = a -> (Int, Int) -> b
+
+type ForeachRegion img = forall a . img -> ForeachRegionFunc img a -> [a]
 
 -- | Given an image, returns 1) number of regions; 2) region's size;
 --    3) /foreachRegion/ function, that is 'ForeachRegion' with first argument applied.
-type ForeachRegion' img = forall a . img -> ((Int, Int), (Int,Int), (img -> (Int, Int) -> a) -> [a])
+type ForeachRegion' img = forall a . img -> ( RegionsCount
+                                            , RegionsSize
+                                            , ForeachRegionFunc img a -> [a]
+                                            )
 
 
 

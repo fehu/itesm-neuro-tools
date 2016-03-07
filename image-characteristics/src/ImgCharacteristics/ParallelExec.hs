@@ -16,17 +16,18 @@
 
 module ImgCharacteristics.ParallelExec (
 
-  ForeachRegionM
+  ForeachRegionPar
 , RegionsExtractorPar(..)
-, IOAlias(..)
+, IOLike(..)
 
 , inParallel
-, inParallel'
+--, inParallel'
 
 , Execution
 , parNew
---, parExec
+, parExec
 , parFork
+, parForked
 
 , parAppendArgs
 , parGet
@@ -50,64 +51,60 @@ import qualified Data.Sequence as Seq
 
 -----------------------------------------------------------------------------
 
-class (Monad a) =>  IOAlias a where toIO   :: a  x -> IO x
-                                    fromIO :: IO x -> a  x
+class (Monad a) =>  IOLike a where toIO   :: a  x -> IO x
+                                   fromIO :: IO x -> a  x
 
-instance IOAlias IO where toIO = id
-                          fromIO = id
+instance IOLike IO where toIO = id
+                         fromIO = id
+
+-----------------------------------------------------------------------------
+
+--type ForeachRegionM m img = forall a . img -> (img -> (Int, Int) -> m a) -> m [a]
+
+--type ForeachRegionM' m img =
+--    forall a . img -> ((Int, Int), (Int,Int), (img -> (Int, Int) -> m a) -> m [a])
 
 -----------------------------------------------------------------------------
 
-type ForeachRegionM m img = forall a . img -> (img -> (Int, Int) -> m a) -> m [a]
-
-type ForeachRegionM' m img =
-    forall a . img -> ((Int, Int), (Int,Int), (img -> (Int, Int) -> m a) -> m [a])
-
------------------------------------------------------------------------------
+type ForeachRegionPar m c img r = Execution m c (img, (Int, Int)) r -> m [r]
 
 -- | Process each region in parallell.
-class RegionsExtractorPar m img where foreachRegionPar  :: Int -- ^ Number of threads.
-                                                        -> ForeachRegionM m img
-                                      foreachRegionPar' :: Int -> ForeachRegionM' m img
+class RegionsExtractorPar m img where foreachRegionPar  :: img -> ForeachRegionPar m c img r
 
-instance (RegionsExtractor img, Eq img, IOAlias m) => RegionsExtractorPar m img where
-    foreachRegionPar  poolSize img f = fromIO $ inParallel' poolSize
-                                                          (toIO . uncurry f)
-                                                          (foreachRegion img (,))
-    foreachRegionPar' poolSize img = let (rc, rs, _) = foreachRegion' img
-                                     in (rc, rs, foreachRegionPar poolSize img)
+                                      foreachRegionPar' :: img -> ( RegionsCount
+                                                                  , RegionsSize
+                                                                  , ForeachRegionPar m c img r
+                                                                  )
+
+instance (RegionsExtractor img, Eq img, IOLike m) => RegionsExtractorPar m img where
+
+    foreachRegionPar img ex = do parFork ex
+                                 parAppendArgs ex regions
+                                 parWait ex
+        where regions = foreachRegion img (,)
+
+    foreachRegionPar' img = (rCount, rSize, foreachRegionPar img)
+        where (rCount, rSize, _) = foreachRegion' img
+
 
 -----------------------------------------------------------------------------
 
 -- | Run in parallel.
-inParallel :: (Eq a, IOAlias m) =>
+inParallel :: (Eq a, IOLike m) =>
               Int               -- ^ Executor pool size.
            -> (m () -> m ())    -- ^ Fork executor thread.
            -> m c               -- ^ Initialize context.
            -> (c -> a -> m b)  -- ^ Function to be applied (with context).
            -> [a]               -- ^ Data to apply.
            -> m [b]
-inParallel poolSize forkExecutor init f args = do
-    e <- parNew poolSize forkExecutor init f args
-    -- Single execution; terminate after that.
-    parTerminate e
-    parrun e []
-    fromIO . takeMVar $ execOutputs e
-
-
-
-inParallel' :: (Eq a) =>
-               Int           -- ^ Executor pool size.
-            -> (a -> IO b)   -- ^ Function to be applied.
-            -> [a]           -- ^ Data to apply.
-            -> IO [b]
-inParallel' poolSize f = inParallel poolSize (void . forkIO) (return ()) (const f)
+inParallel poolSize forkExecutor init f args =
+    parExec =<< parNew poolSize forkExecutor init f args
 
 
 -----------------------------------------------------------------------------
 
 -- | Creates new 'Execution'.
-parNew :: (IOAlias m) =>
+parNew :: (IOLike m) =>
           Int               -- ^ Pool size.
        -> (m () -> m ())    -- ^ Fork executor thread.
        -> m c               -- ^ Init context in 'Executor' thread.
@@ -120,30 +117,50 @@ parNew poolSize forkExecutor init f args = do
     newExecution pool (Seq.fromList args)
 
 
----- | Executes controller in current thread.
---parExec :: (IOAlias m, Eq a) => Execution m c a b -> m [b]
---parExec e = do parrun e []
---               fromIO . takeMVar $ execOutputs e
+-- | Executes controller in current thread and terminates it.
+parExec :: (IOLike m, Eq a) => Execution m c a b -> m [b]
+parExec e = do -- Single execution; terminate after that.
+               parTerminate e
+               parrun e []
+               fromIO . takeMVar $ execOutputs e
 
--- | Executes controller in a separate thread.
-parFork :: (IOAlias m, Eq a) => Execution m c a b -> m ()
-parFork e = fromIO . void . forkIO .toIO $ parrun e []
+-- | Executes controller in a separate thread, if not marked as forked.
+--   Marks as forked.
+parFork :: (IOLike m, Eq a) => Execution m c a b -> m ()
+parFork e = do forked <- parForked e
+               unless forked $ fromIO . void . forkIO
+                             $ do atomically $ writeTVar (execForked e) True
+                                  toIO $ parrun e []
 
--- | Append input arguments for execution.
-parAppendArgs :: (IOAlias m) => Execution m c a b -> [a] -> m ()
-parAppendArgs e = fromIO . atomically . modifyTVar' (execInputs e) . flip (><) . Seq.fromList
+--fromIO . void . forkIO $ do atomically $ writeTVar (execForked e) True
+--                                        toIO $ parrun e []
+
+-- Marked as forked?
+parForked :: (IOLike m) => Execution m c a b -> m Bool
+parForked = fromIO . readTVarIO . execForked
+
+-- | Append input arguments list for execution.
+parAppendArgs :: (IOLike m) => Execution m c a b -> [a] -> m ()
+parAppendArgs e = parAppendArgsSeq e . Seq.fromList
+--fromIO . atomically . modifyTVar' (execInputs e) . flip (><) . Seq.fromList
+
+
+-- | Append input arguments 'Seq' for execution.
+parAppendArgsSeq :: (IOLike m) => Execution m c a b -> Seq a -> m ()
+parAppendArgsSeq e = fromIO . atomically . modifyTVar' (execInputs e) . flip (><)
+
 
 -- | Wait results. Blocks.
-parWait :: (IOAlias m) => Execution m c a b -> m [b]
+parWait :: (IOLike m) => Execution m c a b -> m [b]
 parWait = fromIO . takeMVar . execOutputs
 
 -- | Try to read results. Returns immediately.
-parGet :: (IOAlias m) => Execution m c a b -> m (Maybe [b])
+parGet :: (IOLike m) => Execution m c a b -> m (Maybe [b])
 parGet = fromIO . tryTakeMVar . execOutputs
 
 -- | Marks 'Execution' for termination. Returns immediately.
 --   Liberates threads after all arguments hace been processed.
-parTerminate :: (IOAlias m) => Execution m c a b -> m ()
+parTerminate :: (IOLike m) => Execution m c a b -> m ()
 parTerminate = fromIO . atomically . flip writeTVar True . execTerminate
 
 -----------------------------------------------------------------------------
@@ -152,7 +169,7 @@ usedThreadDelay = 10 -- millis
 
 -----------------------------------------------------------------------------
 
-parrun :: (Eq a, IOAlias m) => Execution m c a b -> [b] -> m ()
+parrun :: (Eq a, IOLike m) => Execution m c a b -> [b] -> m ()
 parrun ex acc = do
     (argsSeq, terminate) <- fromIO . atomically $ do
                                         arg <- readTVar $ execInputs ex
@@ -207,12 +224,14 @@ data Execution m c a b = Execution {
       , execInputs  :: TVar (Seq a)
       , execOutputs :: MVar [b]
       , execTerminate :: TVar Bool
+      , execForked    :: TVar Bool
     }
 
 newExecution pool args = fromIO $ do ein  <- newTVarIO args
                                      eout <- newEmptyMVar
                                      term <- newTVarIO False
-                                     return $ Execution pool ein eout term
+                                     fork <- newTVarIO False
+                                     return $ Execution pool ein eout term fork
 
 -----------------------------------------------------------------------------
 
@@ -254,7 +273,7 @@ terminated = fmap (Just ETerminate ==) . tryReadMVar . execInput
 --   - Working          -- input MVar is empty, finished flag not set.
 --   - Finished (Ready) -- input MVar is empty, finished flag set.
 --   - Terminated       -- input MVar is set to 'ETerminate' (finished flag also set).
-runExecutor :: (IOAlias m) => Executor m c a b -> m ()
+runExecutor :: (IOLike m) => Executor m c a b -> m ()
 runExecutor e = do -- Initialize if needed
                    ctx' <- fromIO . readIORef $ execContext e
                    ctx  <- case ctx' of Just c -> return c

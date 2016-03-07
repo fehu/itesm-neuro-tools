@@ -20,7 +20,7 @@ Conatains tools for 1) image characteristics extraction
                     2) Weka's Multilayer Perceptron model training;
                     3) image classification, using the model.
 
-wick <mode> <source> <target> [help] [verbosity] [save-regions] [name] [no-class] [validate] [x-report] [options] [tikz-confusion] [gui]
+wick <mode> <source> <target> [help] [verbosity] [save-regions] [name] [no-class] [validate] [x-report] [options] [tikz-confusion] [gui] [par]
 
 Positional:
   mode ::
@@ -89,6 +89,11 @@ Optional:
   gui
      -G --gui
      [CLASS] Show classification results in GUI (uses GTK).
+
+  par <value>
+     --par
+     [CLASS] Run classification in parallel threads (experimental).
+        value :: Int 	--  number of threads
 
 ```
 

@@ -16,7 +16,7 @@
 module MainClass where
 
 
-import CArgs as CArgs
+import CArgs
 
 import WildfireClass
 import MainCommon
@@ -27,6 +27,8 @@ import WekaCall
 import WekaCall.Classify
 
 import Weka.Core (Instances')
+
+import Foreign.Java (forkJava)
 
 import ImgCharacteristics
 import ImgCharacteristics.MainTemplate
@@ -41,7 +43,11 @@ import Data.List (partition)
 import Data.Maybe (isJust)
 import Control.Monad
 
+import Control.Concurrent.STM
+
 -----------------------------------------------------------------------------
+
+type Ctx = ((Classifier', Instances'), Maybe (TVar (Maybe (ImageTiles RGB))))
 
 -- | Classify given images, based on its regions classification,
 --   using the provided model.
@@ -56,29 +62,51 @@ mainClass modelF idir opts verb = do
     imgs     <- readImages imgPaths
 
     let showGUI = isJust $ CArgs.get opts classificationGUI
---        runPar  = CArgs.get opts classifyParallel
+        runPar  = CArgs.get opts classifyParallel
 
-    mbWTiles <- if showGUI then fmap Just imageTilesWindow
+    mbWTiles <- if showGUI then do win <- imageTilesWindow
+                                   var <- newTVarIO Nothing -- TODO: unused if not `runPar`
+                                   return $ Just (win, var)
                            else return Nothing
 
 
     withWekaHomeEnv extraClasspath $ do
         ch <- loadModel $ text2str modelF
 
+        -- Par definitions
+        let init = return (ch, fmap snd mbWTiles)
+            exec :: Ctx -> (RGB, (Int, Int)) -> Java (WildfireClass, (Int, Int))
+            exec (ch, mbTilesVar) (img, xy) = do mbTiles <- mapM (fromIO . readTVarIO) mbTilesVar
+                                                 processRegion (join mbTiles) ch img xy
+        -- Par execution
+        mbEx <- forM runPar $ \n -> parNew n (void . forkJava) init exec []
+
+
         classification <- forM imgs
             $ \(img,file) -> do
-                let (rCount, rSize, foreachR) = foreachRegion' img
+                let (rCount, rSize, foreachR) =
+                        case mbEx of Just ex -> let (c,s,f) = foreachRegionPar' img
+                                                in (c,s, const $ f ex)
+                                     _       -> let (c,s,f) = foreachRegion' img
+                                                in (c, s, \mbITiles' -> sequence
+                                                                   $ f (processRegion mbITiles' ch)
+                                                    )
 
-                mbITiles <- forM mbWTiles $ \wTiles -> io $ newImgTiles wTiles rCount rSize
-                a <- assemble file =<< sequence (foreachR (processRegion mbITiles ch))
+                mbITiles <- forM mbWTiles $
+                         \(wTiles, tilesVar) -> io $ do
+                                iTiles <- newImgTiles wTiles rCount rSize :: IO (ImageTiles RGB)
+                                when (isJust runPar) . atomically $ writeTVar tilesVar (Just iTiles)
+                                return iTiles
+
+                a <- assemble file =<< foreachR mbITiles
                 forM_ mbITiles (io . waitClick)
                 return a
 
         let (ok, warn) = partition (null . snd) classification
-
         println $ "\n\tImages: " ++ show (length classification)
                  ++ "\tOK: "     ++ show (length ok)
                  ++ "\tDANGER: " ++ show (length warn)
+
 
 resultStr file regions | null regions = "\nOK\t"     ++ file
                        | otherwise    = "\nDANGER\t" ++ file ++ '\t': unwords (map show regions)

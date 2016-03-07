@@ -76,8 +76,8 @@ import Data.List (intercalate)
 
 -----------------------------------------------------------------------------
 
-instance IOAlias JNI.Java where toIO   = JNI.runJava
-                                fromIO = JNI.io
+instance IOLike JNI.Java where toIO   = JNI.runJava
+                               fromIO = JNI.io
 
 -----------------------------------------------------------------------------
 
