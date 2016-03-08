@@ -26,5 +26,6 @@ cabal configure
 cabal build
 cabal haddock --hyperlink-source &> /dev/null
 echo "Documentation created: dist/doc/html/"
-cabal install --force-reinstalls
+cabal copy
+cabal register
 cd ..
