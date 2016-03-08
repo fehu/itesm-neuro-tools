@@ -37,20 +37,20 @@ El script hace lo siguiente:
 4. Descarga el proyecto en cuestion `itesm-neuro-tools` y sus dependencias, que no están publicadas:
    `EitherProjections`, `CommandArgs`, `WekaData`, `Nat` y `java-bridge`.
 5. Instala los proyectos del punto 4.
-6. Genera código para _JNI_ (using `java-bridge` fork) en `itesm-neuro-tools/image-characteristics/bindings`.
+6. Genera código para _JNI_ (usando `java-bridge` fork) en `itesm-neuro-tools/image-characteristics/bindings`.
 7. Instala el resto de dependencias con _cabal_.
 8. Instala `itesm-neuro-tools/image-characteristics`.
-9. Demuesta el mensaje de ayuda.
+9. Demuesta el mensaje de ayuda de la ejecutable instalada: `wick`.
 
 #### "Basura"
 
 * _GHC_ y _cabal_ se instalan en `/opt`.
-* Todos los paquetes, descargados _cabal_, se encuentran en `~/.cabal`.
+* Todos los paquetes, descargados por _cabal_, se encuentran en `~/.cabal`.
   También se usa la carpeta `~/.ghc`.
 
 ### Problemas
 
-El problema principal que se encuentra, son las diferencias en el código generado por `java-bridge`.
+Las problemas principales que se encuentran son las diferencias en el código generado por `java-bridge`.
 La razon, no la conozco, pero los cambios se introduzcan por instalción de `java-bridge`.
 
 Hay dos maneras de resolverlo:
