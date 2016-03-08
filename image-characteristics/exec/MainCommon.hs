@@ -27,15 +27,19 @@ import System.FilePath
 import ImgCharacteristics
 import ImgCharacteristics.Friday
 
-import Vision.Image (RGB)
 import Vision.Image (convert, RGB, Convertible)
 
 
 -----------------------------------------------------------------------------
 
+-- | from https://hackage.haskell.org/package/directory-1.2.5.1/docs/src/System-Directory.html#listDirectory
+listDirectory :: FilePath -> IO [FilePath]
+listDirectory path =
+  filter f <$> getDirectoryContents path
+  where f filename = filename /= "." && filename /= ".."
 
 listImages dir' = do let dir = text2str dir'
-                     imgs' <- listDirectory dir
+                     imgs' <- MainCommon.listDirectory dir
                      return $ map (dir </>) imgs'
 
 -----------------------------------------------------------------------------
