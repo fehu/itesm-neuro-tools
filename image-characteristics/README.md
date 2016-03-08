@@ -18,7 +18,7 @@ Requires:
 ##### Warning
 
 Different versions of JDK might result in different binding order generation,
-that breaks compilation with java version change. Current version is for Oracle _JDK 1.8.0_73_.
+that breaks compilation with java version change. Current version is for Oracle _JDK 1.8.0_74_.
 
 ### Usage
 

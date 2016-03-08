@@ -31,7 +31,7 @@ description:
     = Java
     .
     Different versions of JDK might result in different binding order generation,
-    that breaks compilation with java version change. Current version is for Oracle JDK 1.8.0_73.
+    that breaks compilation with java version change. Current version is for Oracle JDK 1.8.0_74.
 
 homepage:            https://github.com/fehu/itesm-neuro-tools/tree/master/image-characteristics
 license:             MIT

@@ -114,7 +114,7 @@ withWekaClassifier :: (Classifier c) =>
 withWekaClassifier clazz c0 src f = withWekaHomeEnv extraClasspath $ do
     -- Instances
     Just instances <- readDatasource src
-    Just cAttr <- Instances.attribute instances =<< jString clazz
+    Just cAttr <- Instances.attribute' instances =<< jString clazz
     Instances.setClass instances cAttr :: Java ()
 
     -- Filters + Classifier
@@ -150,7 +150,7 @@ makeInstance header vals = do
     -- Set attribute values
     let nvals = map realToFrac $ vec2list vals :: [Double]
     sequence_ $ do (a,v) <- zip ([0..] :: [Int]) nvals
-                   return (I.setValue' inst a v :: Java ())
+                   return (I.setValue''' inst a v :: Java ())
 
     -- Set class unknown
     I.setMissing' inst nAttr :: Java ()
