@@ -98,7 +98,7 @@ loadModel path = do Just loaded <- Helper.loadModel =<< jString path
 -----------------------------------------------------------------------------
 
 -- | Extra classpath used by project.
-extraClasspath = [ "java/classes" ]
+extraClasspath = [ "weka-calls.jar" ]
 
 type WithWekaClassifier r = FilteredClassifier' -> Instances' -> Java r
 

@@ -2,9 +2,32 @@
 -- further documentation, see http://haskell.org/cabal/users-guide/
 
 name:                image-characteristics
-version:             0.4.2.2
-synopsis:            Image characteristics extraction
--- description:
+version:             0.4.3.0
+synopsis:            Image characteristics extraction and classification.
+description:
+    Provides tools for extracting images characteristics, training a classifier and classification.
+    .
+    = Wildfire Image Classification Kit (WICK)
+    .
+    All the tools are incorparated in single executable @wick@, that has following modes:
+    .
+    1. [ARFF] Extract images characteristics (descriptive statistics),
+              selecting a class for each region. Write data to *.arff file.
+    .
+    2. [MODEL] Train a /Multilayer Perceptron/, using Weka <http://www.cs.waikato.ac.nz/ml/weka/>.
+               Save the model to file.
+    .
+    3. [CLASS] Classify images, deriving the result from regions classification.
+    .
+    For more information about the executable, run @wick -h@ or @wick --help@.
+    .
+    = Distribution
+    .
+    The executable @wick@ needs:
+    .
+    1. @WEKA_HOME@ environmental variable set to Weka installation directory;
+    2. Generated @weka-calls.jar@ must be present in the directory where @wick@ is called from.
+
 homepage:            https://github.com/fehu/itesm-neuro-tools/tree/master/image-characteristics
 license:             MIT
 license-file:        LICENSE

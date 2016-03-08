@@ -3,9 +3,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 CLASSES_DIR="$DIR/classes/"
 
-rm -rf $CLASSES_DIR
-mkdir $CLASSES_DIR
+rm -rf "$CLASSES_DIR"
+mkdir "$CLASSES_DIR"
 
-javac -cp $WEKA_HOME/weka.jar -d $CLASSES_DIR $DIR/src/* -Xlint:unchecked
+javac -cp "$WEKA_HOME/weka.jar" -d "$CLASSES_DIR" "$DIR"/src/* -Xlint:unchecked
 
-# -sourcepath ./src/  
+jar cvf "$DIR/../weka-calls.jar" -C "$DIR/classes/" .
+
+
