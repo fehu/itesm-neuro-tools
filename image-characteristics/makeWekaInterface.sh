@@ -1,5 +1,5 @@
 # compile java sources
-sh java/compile.sh
+bash java/compile.sh
 
 CLASSPATH="$WEKA_HOME/weka.jar":./weka-calls.jar
 
