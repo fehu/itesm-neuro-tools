@@ -35,7 +35,7 @@ El script hace lo siguiente:
 2. Instala _Oracle JDK_ __8__ y lo configura ser __version por defecto__.
 3. Instala: `git`, `zlib1g-dev`, `libglib2.0`, `libcairo2-dev`, `libpango1.0-dev`, `libgtk-3-dev`.
 4. Descarga el proyecto en cuestion `itesm-neuro-tools` y sus dependencias, que no están publicadas:
-   `EitherProjections`, `CommandArgs`, `WekaData` y `java-bridge`.
+   `EitherProjections`, `CommandArgs`, `WekaData`, `Nat` y `java-bridge`.
 5. Instala los proyectos del punto 4.
 6. Genera código para _JNI_ (using `java-bridge` fork) en `itesm-neuro-tools/image-characteristics/bindings`.
 7. Instala el resto de dependencias con _cabal_.
