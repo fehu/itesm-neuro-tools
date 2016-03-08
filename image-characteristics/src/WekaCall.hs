@@ -114,7 +114,7 @@ withWekaClassifier :: (Classifier c) =>
 withWekaClassifier clazz c0 src f = withWekaHomeEnv extraClasspath $ do
     -- Instances
     Just instances <- readDatasource src
-    Just cAttr <- Instances.attribute' instances =<< jString clazz
+    Just cAttr <- Instances.attribute instances =<< jString clazz
     Instances.setClass instances cAttr :: Java ()
 
     -- Filters + Classifier
@@ -153,7 +153,7 @@ makeInstance header vals = do
                    return (I.setValue' inst a v :: Java ())
 
     -- Set class unknown
-    I.setMissing inst nAttr :: Java ()
+    I.setMissing' inst nAttr :: Java ()
     return inst
 
 

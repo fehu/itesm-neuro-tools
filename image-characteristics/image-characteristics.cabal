@@ -2,7 +2,7 @@
 -- further documentation, see http://haskell.org/cabal/users-guide/
 
 name:                image-characteristics
-version:             0.4.3.0
+version:             0.4.4.0
 synopsis:            Image characteristics extraction and classification.
 description:
     Provides tools for extracting images characteristics, training a classifier and classification.
@@ -25,8 +25,13 @@ description:
     .
     The executable @wick@ needs:
     .
-    1. @WEKA_HOME@ environmental variable set to Weka installation directory;
+    1. @WEKA_HOME@ environmental variable set to Weka installation directory; works with Weka 3.6.
     2. Generated @weka-calls.jar@ must be present in the directory where @wick@ is called from.
+    .
+    = Java
+    .
+    Different versions of JDK might result in different binding order generation,
+    that breaks compilation with java version change. Current version is for Oracle JDK 1.8.0_73.
 
 homepage:            https://github.com/fehu/itesm-neuro-tools/tree/master/image-characteristics
 license:             MIT

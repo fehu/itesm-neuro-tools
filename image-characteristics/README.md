@@ -12,6 +12,14 @@ Requires:
 * [Weka Data] (https://github.com/fehu/min-dat--weka-data)
 
 
+`WEKA_HOME` environmental variable needs to be set to Weka installation directory.
+
+
+##### Warning
+
+Different versions of JDK might result in different binding order generation,
+that breaks compilation with java version change. Current version is for Oracle _JDK 1.8.0_73_.
+
 ### Usage
 
 ```

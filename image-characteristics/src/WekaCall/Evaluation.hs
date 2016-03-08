@@ -144,8 +144,8 @@ zipReporters (WekaReportBuilder a) (WekaReportBuilder b) =
 -----------------------------------------------------------------------------
 
 defaultReporter = wekaReportBuilder' [ flip Evaluation.toSummaryString'' True
-                                     , Evaluation.toMatrixString
-                                     , Evaluation.toClassDetailsString
+                                     , Evaluation.toMatrixString'
+                                     , Evaluation.toClassDetailsString'
                                      ]
 
 confusionReporter :: WekaReportBuilder [[Double]]
