@@ -32,6 +32,7 @@ module ImgCharacteristics.ParallelExec (
 , parAppendArgs
 , parGet
 , parWait
+, parWaitLen
 , parTerminate
 
 ) where
@@ -69,7 +70,7 @@ instance IOLike IO where toIO = id
 type ForeachRegionPar m c img r = Execution m c (img, (Int, Int)) r -> m [r]
 
 -- | Process each region in parallell.
-class RegionsExtractorPar m img where foreachRegionPar  :: img -> ForeachRegionPar m c img r
+class RegionsExtractorPar m img where -- foreachRegionPar  :: img -> ForeachRegionPar m c img r
 
                                       foreachRegionPar' :: img -> ( RegionsCount
                                                                   , RegionsSize
@@ -78,13 +79,19 @@ class RegionsExtractorPar m img where foreachRegionPar  :: img -> ForeachRegionP
 
 instance (RegionsExtractor img, Eq img, IOLike m) => RegionsExtractorPar m img where
 
-    foreachRegionPar img ex = do parFork ex
-                                 parAppendArgs ex regions
-                                 parWait ex
-        where regions = foreachRegion img (,)
+--    foreachRegionPar img ex = do parFork ex
+----                                 parAppendArgs ex regions
+--                                 sequence_ $ foreachRegion img (curry (parAppendArg ex))
+--                                 parWait ex
+--        where regions = foreachRegion img (,)
 
     foreachRegionPar' img = (rCount, rSize, foreachRegionPar img)
         where (rCount, rSize, _) = foreachRegion' img
+              totalLength        = uncurry (*) rCount
+              foreachRegionPar img ex = do parFork ex
+                                           fromIO $ putStrLn $ "rCount = " ++ show rCount
+                                           sequence_ $ foreachRegion img (curry (parAppendArg ex))
+                                           parWaitLen ex totalLength
 
 
 -----------------------------------------------------------------------------
@@ -139,10 +146,14 @@ parFork e = do forked <- parForked e
 parForked :: (IOLike m) => Execution m c a b -> m Bool
 parForked = fromIO . readTVarIO . execForked
 
+-- | Append input argument for execution.
+parAppendArg :: (IOLike m) => Execution m c a b -> a -> m ()
+parAppendArg e = parAppendArgsSeq e . Seq.singleton
+
+
 -- | Append input arguments list for execution.
 parAppendArgs :: (IOLike m) => Execution m c a b -> [a] -> m ()
 parAppendArgs e = parAppendArgsSeq e . Seq.fromList
---fromIO . atomically . modifyTVar' (execInputs e) . flip (><) . Seq.fromList
 
 
 -- | Append input arguments 'Seq' for execution.
@@ -153,6 +164,14 @@ parAppendArgsSeq e = fromIO . atomically . modifyTVar' (execInputs e) . flip (><
 -- | Wait results. Blocks.
 parWait :: (IOLike m) => Execution m c a b -> m [b]
 parWait = fromIO . takeMVar . execOutputs
+
+-- | Wait result of minimal length. Blocks.
+parWaitLen :: (IOLike m) => Execution m c a b -> Int -> m [b]
+parWaitLen ex len = do len' <- fromIO $ withMVar (execOutputs ex) (return . length)
+--modifyMVar (execOutputs ex) (return . (id &&& length)) -- withMVar
+                       fromIO . putStrLn $ "len' = " ++ show len' ++ "; len = " ++ show len
+                       if len' >= len then parWait ex
+                                      else parWaitLen ex len
 
 -- | Try to read results. Returns immediately.
 parGet :: (IOLike m) => Execution m c a b -> m (Maybe [b])
@@ -165,7 +184,7 @@ parTerminate = fromIO . atomically . flip writeTVar True . execTerminate
 
 -----------------------------------------------------------------------------
 
-usedThreadDelay = 10 -- millis
+usedThreadDelay = 0 -- millis
 
 -----------------------------------------------------------------------------
 
@@ -205,13 +224,17 @@ parrun ex acc = do
 
     let used = length argsSeq - length args'
         acc' = res ++ acc
+        guard = do emptyRes <- fromIO $ isEmptyMVar (execOutputs ex)
+                   ($ execOutputs ex) $ if emptyRes
+                                        then flip putMVar acc'
+                                        else flip modifyMVar_ (return . (acc'  ++))
     -- Drop used args
     unless (used == 0) $ fromIO . atomically $ modifyTVar (execInputs ex) (Seq.drop used)
 
     allFin <- and <$> forM pool (fromIO . finished)
 
-    if null argsSeq && allFin then do unless (null acc') . fromIO $ -- Put return value
-                                             putMVar (execOutputs ex) (reverse acc')
+    if null argsSeq && allFin then do unless (null acc') . fromIO $ guard -- Put return value
+--                                             modifyMVar_ (execOutputs ex) (return . (acc' ++))
                                       allTerm <- and <$> forM pool (fromIO . terminated)
                                       -- Rec call if not terminating yet
                                       unless (terminate && allTerm) $ parrun ex []
