@@ -1,0 +1,37 @@
+\begin{tikzpicture}[>=triangle 60]
+\tikzset{ class/.style={align=center, minimum height=4ex,text width=6em,
+                        draw, circle} };
+\def\psize{15cm}
+
+\node[draw=none,regular polygon,minimum size=\psize,regular polygon sides=4] (poly) {};
+
+\node[class] (N1) at (poly.corner 1) { \textbf{Fire} \\ 410 of 516\\$\approx \mathbf{79\%}$ };
+\node[class] (N2) at (poly.corner 2) { \textbf{Ignore} \\ 0 of 0\\$\approx \mathbf{0\%}$ };
+\node[class] (N3) at (poly.corner 3) { \textbf{Neither} \\ 762 of 869\\$\approx \mathbf{87\%}$ };
+\node[class] (N4) at (poly.corner 4) { \textbf{Smoke} \\ 481 of 575\\$\approx \mathbf{83\%}$ };
+
+\begin{scope}[draw=red, text=red]
+\draw (N1) edge [->, bend left] node[label=left:{$0\%$}]{} (N2);
+\draw (N1) edge [->, bend right] node[label=left:{$12\%$}]{} (N3);
+\draw (N1) edge [->, bend left] node[label=left:{$7\%$}]{} (N4);
+\end{scope}
+
+\begin{scope}[draw=black, text=black]
+\draw (N2) edge [->, bend left] node[label=left:{$0\%$}]{} (N1);
+\draw (N2) edge [->, bend left] node[label=left:{$0\%$}]{} (N3);
+\draw (N2) edge [->, bend right] node[label=left:{$0\%$}]{} (N4);
+\end{scope}
+
+\begin{scope}[draw=green!50!black, text=green!50!black]
+\draw (N3) edge [->, bend right] node[label=left:{$6\%$}]{} (N1);
+\draw (N3) edge [->, bend left] node[label=left:{$0\%$}]{} (N2);
+\draw (N3) edge [->, bend left] node[label=left:{$5\%$}]{} (N4);
+\end{scope}
+
+\begin{scope}[draw=orange!50!black, text=orange!50!black]
+\draw (N4) edge [->, bend left] node[label=left:{$6\%$}]{} (N1);
+\draw (N4) edge [->, bend right] node[label=left:{$0\%$}]{} (N2);
+\draw (N4) edge [->, bend left] node[label=left:{$10\%$}]{} (N3);
+\end{scope}
+
+\end{tikzpicture}
