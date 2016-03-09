@@ -38,7 +38,7 @@ module ImgCharacteristics.ParallelExec (
 
 import ImgCharacteristics
 
-import Control.Concurrent (forkOS)
+import Control.Concurrent (forkOS, threadDelay)
 import Control.Concurrent.STM
 import Control.Monad
 import Control.Arrow
@@ -61,9 +61,7 @@ instance IOLike IO where toIO = id
 type ForeachRegionPar m c img r = Execution m c (img, (Int, Int)) r -> m [r]
 
 -- | Process each region in parallell.
-class RegionsExtractorPar m img where -- foreachRegionPar  :: img -> ForeachRegionPar m c img r
-
-                                      foreachRegionPar' :: img -> ( RegionsCount
+class RegionsExtractorPar m img where foreachRegionPar' :: img -> ( RegionsCount
                                                                   , RegionsSize
                                                                   , ForeachRegionPar m c img r
                                                                   )
@@ -73,7 +71,6 @@ instance (RegionsExtractor img, Eq img, IOLike m) => RegionsExtractorPar m img w
         where (rCount, rSize, _) = foreachRegion' img
               totalLength        = uncurry (*) rCount
               foreachRegionPar img ex = do parFork ex
-                                           fromIO $ putStrLn $ "rCount = " ++ show rCount
                                            sequence_ $ foreachRegion img (curry (parAppendArg ex))
                                            parWaitLen ex totalLength
 
@@ -85,7 +82,7 @@ inParallel :: (Eq a, IOLike m) =>
               Int               -- ^ Executor pool size.
            -> (m () -> m ())    -- ^ Fork executor thread.
            -> m c               -- ^ Initialize context.
-           -> (c -> a -> m b)  -- ^ Function to be applied (with context).
+           -> (c -> a -> m b)   -- ^ Function to be applied (with context).
            -> [a]               -- ^ Data to apply.
            -> m [b]
 inParallel poolSize forkExecutor init f args =
@@ -161,9 +158,6 @@ parGet = fromIO . atomically . tryTakeTMVar . execOutputs
 parTerminate :: (IOLike m) => Execution m c a b -> m ()
 parTerminate = fromIO . atomically . flip writeTVar True . execTerminate
 
------------------------------------------------------------------------------
-
-usedThreadDelay = 0 -- millis
 
 -----------------------------------------------------------------------------
 

@@ -100,11 +100,14 @@ Optional:
   gui
      -G --gui
      [CLASS] Show classification results in GUI (uses GTK).
+     'Return' key may be used instead of 'Next' button.
 
   par <value>
      --par
-     [CLASS] Run classification in parallel threads (experimental).
-        value :: Int 	--  number of threads
+     [CLASS] Run classification in parallel (experimental).
+        value :: Int
+          number of executors; the actual number of physical threads
+          won't be set greater than the number of processors.
 
 ```
 

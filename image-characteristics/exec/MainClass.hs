@@ -43,7 +43,9 @@ import Data.List (partition)
 import Data.Maybe (isJust)
 import Control.Monad
 
+import Control.Concurrent (forkOS, setNumCapabilities)
 import Control.Concurrent.STM
+import GHC.Conc (getNumProcessors)
 
 -----------------------------------------------------------------------------
 
@@ -79,7 +81,9 @@ mainClass modelF idir opts verb = do
             exec (ch, mbTilesVar) (img, xy) = do mbTiles <- mapM (fromIO . readTVarIO) mbTilesVar
                                                  processRegion (join mbTiles) ch img xy
         -- Par execution
-        mbEx <- forM runPar $ \n -> parNew n (void . forkJava) init exec []
+        mbEx <- forM runPar $ \n -> do io $ do cpus <- getNumProcessors
+                                               setNumCapabilities (cpus `min` n)
+                                       parNew n (void . fromIO . forkOS . toIO) init exec []
 
 
         classification <- forM imgs

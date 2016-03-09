@@ -151,9 +151,12 @@ nnetSettings = optional "o" ["options"]
 --------------
 
 classificationGUI = optionalFlag "G" ["gui"]
-                                ["[CLASS] Show classification results in GUI (uses GTK)."]
+                                [ "[CLASS] Show classification results in GUI (uses GTK)."
+                                , "'Return' key may be used instead of 'Next' button."
+                                ]
 
 classifyParallel :: Optional1 Int
-classifyParallel = optional "" ["par"] ["[CLASS] Run classification in parallel threads (experimental)."]
-                               ["number of threads"]
+classifyParallel = optional "" ["par"] ["[CLASS] Run classification in parallel (experimental)."]
+                               [ "number of executors; the actual number of physical threads"
+                               , "won't be set greater than the number of processors."]
 
