@@ -21,7 +21,6 @@ module ImgCharacteristics.ParallelExec (
 , IOLike(..)
 
 , inParallel
---, inParallel'
 
 , Execution
 , parNew
@@ -39,8 +38,7 @@ module ImgCharacteristics.ParallelExec (
 
 import ImgCharacteristics
 
-import Control.Concurrent
-import Control.Concurrent.MVar
+import Control.Concurrent (forkOS)
 import Control.Concurrent.STM
 import Control.Monad
 import Control.Arrow
@@ -60,13 +58,6 @@ instance IOLike IO where toIO = id
 
 -----------------------------------------------------------------------------
 
---type ForeachRegionM m img = forall a . img -> (img -> (Int, Int) -> m a) -> m [a]
-
---type ForeachRegionM' m img =
---    forall a . img -> ((Int, Int), (Int,Int), (img -> (Int, Int) -> m a) -> m [a])
-
------------------------------------------------------------------------------
-
 type ForeachRegionPar m c img r = Execution m c (img, (Int, Int)) r -> m [r]
 
 -- | Process each region in parallell.
@@ -78,13 +69,6 @@ class RegionsExtractorPar m img where -- foreachRegionPar  :: img -> ForeachRegi
                                                                   )
 
 instance (RegionsExtractor img, Eq img, IOLike m) => RegionsExtractorPar m img where
-
---    foreachRegionPar img ex = do parFork ex
-----                                 parAppendArgs ex regions
---                                 sequence_ $ foreachRegion img (curry (parAppendArg ex))
---                                 parWait ex
---        where regions = foreachRegion img (,)
-
     foreachRegionPar' img = (rCount, rSize, foreachRegionPar img)
         where (rCount, rSize, _) = foreachRegion' img
               totalLength        = uncurry (*) rCount
@@ -128,19 +112,16 @@ parNew poolSize forkExecutor init f args = do
 parExec :: (IOLike m, Eq a) => Execution m c a b -> m [b]
 parExec e = do -- Single execution; terminate after that.
                parTerminate e
-               parrun e []
-               fromIO . takeMVar $ execOutputs e
+               parrun e
+               fromIO . atomically . takeTMVar $ execOutputs e
 
 -- | Executes controller in a separate thread, if not marked as forked.
 --   Marks as forked.
 parFork :: (IOLike m, Eq a) => Execution m c a b -> m ()
 parFork e = do forked <- parForked e
-               unless forked $ fromIO . void . forkIO
+               unless forked $ fromIO . void . forkOS
                              $ do atomically $ writeTVar (execForked e) True
-                                  toIO $ parrun e []
-
---fromIO . void . forkIO $ do atomically $ writeTVar (execForked e) True
---                                        toIO $ parrun e []
+                                  toIO $ parrun e
 
 -- Marked as forked?
 parForked :: (IOLike m) => Execution m c a b -> m Bool
@@ -163,19 +144,17 @@ parAppendArgsSeq e = fromIO . atomically . modifyTVar' (execInputs e) . flip (><
 
 -- | Wait results. Blocks.
 parWait :: (IOLike m) => Execution m c a b -> m [b]
-parWait = fromIO . takeMVar . execOutputs
+parWait = fromIO . atomically . takeTMVar . execOutputs
 
 -- | Wait result of minimal length. Blocks.
 parWaitLen :: (IOLike m) => Execution m c a b -> Int -> m [b]
-parWaitLen ex len = do len' <- fromIO $ withMVar (execOutputs ex) (return . length)
---modifyMVar (execOutputs ex) (return . (id &&& length)) -- withMVar
-                       fromIO . putStrLn $ "len' = " ++ show len' ++ "; len = " ++ show len
+parWaitLen ex len = do len' <- fromIO . atomically $ length <$> readTMVar (execOutputs ex)
                        if len' >= len then parWait ex
                                       else parWaitLen ex len
 
 -- | Try to read results. Returns immediately.
 parGet :: (IOLike m) => Execution m c a b -> m (Maybe [b])
-parGet = fromIO . tryTakeMVar . execOutputs
+parGet = fromIO . atomically . tryTakeTMVar . execOutputs
 
 -- | Marks 'Execution' for termination. Returns immediately.
 --   Liberates threads after all arguments hace been processed.
@@ -188,8 +167,8 @@ usedThreadDelay = 0 -- millis
 
 -----------------------------------------------------------------------------
 
-parrun :: (Eq a, IOLike m) => Execution m c a b -> [b] -> m ()
-parrun ex acc = do
+parrun :: (Eq a, IOLike m) => Execution m c a b -> m ()
+parrun ex = do
     (argsSeq, terminate) <- fromIO . atomically $ do
                                         arg <- readTVar $ execInputs ex
                                         fin <- readTVar $ execTerminate ex
@@ -198,60 +177,55 @@ parrun ex acc = do
     let traversePool :: (Eq a) => [Executor m c a b] -> Seq a -> IO ([b], Seq a)
         traversePool []     args = return ([], args)
         traversePool (e:et) args = do
-            let exec = writeInput e
+            let exec = atomically . writeInput e
                 next' = traversePool et
                 next v t = first (v:) <$> next' t
 
-            term <- terminated e
-            fin  <- finished   e
-            out  <- readOutput e
-            if term then traversePool et args
-                    else if fin
-                            then case viewl args        of a :< at           -> exec (EInput a) >>
-                                                                                next' at
-                                                           _ | terminate     -> exec ETerminate >>
-                                                                                next' args
-                                                           _                 -> next' args
-
-                            else case (viewl args, out) of (a :< at, Just v) -> exec (EInput a) >>
-                                                                                next v at
-                                                           (_,       Just v) -> exec EFinish    >>
-                                                                                next v args
-                                                           _                 -> next' args
+            (out,term,w)  <- atomically $ (,,) <$> readOutput e
+                                               <*> terminated e
+                                               <*> waitsInput e
+            if term then next' args
+                    else case (viewl args, out) of (a :< at, Just v) -> exec (EInput a) >>
+                                                                        next v at
+                                                   (_,       Just v) -> next v args
+                                                   (a :< at, _) | w  -> exec (EInput a) >>
+                                                                        next' at
+                                                   _                 -> when terminate
+                                                                             (exec ETerminate) >>
+                                                                        next' args
     let pool = execPool ex
 
     (res, args') <- fromIO $ traversePool pool argsSeq
 
     let used = length argsSeq - length args'
-        acc' = res ++ acc
-        guard = do emptyRes <- fromIO $ isEmptyMVar (execOutputs ex)
-                   ($ execOutputs ex) $ if emptyRes
-                                        then flip putMVar acc'
-                                        else flip modifyMVar_ (return . (acc'  ++))
+        guard = fromIO . atomically $ do
+                    emptyRes <- isEmptyTMVar (execOutputs ex)
+                    ($ execOutputs ex)
+                              $ if emptyRes
+                                then flip putTMVar res
+                                else \v -> takeTMVar v >>= putTMVar v . (res ++)
+
     -- Drop used args
     unless (used == 0) $ fromIO . atomically $ modifyTVar (execInputs ex) (Seq.drop used)
 
-    allFin <- and <$> forM pool (fromIO . finished)
+    unless (null res) . fromIO $ guard -- Put return value
+    allTerm <- fromIO . atomically $ and <$> forM pool terminated
+    -- Rec call if not terminating yet
+    unless (terminate && allTerm) $ parrun ex
 
-    if null argsSeq && allFin then do unless (null acc') . fromIO $ guard -- Put return value
---                                             modifyMVar_ (execOutputs ex) (return . (acc' ++))
-                                      allTerm <- and <$> forM pool (fromIO . terminated)
-                                      -- Rec call if not terminating yet
-                                      unless (terminate && allTerm) $ parrun ex []
-                              else parrun ex acc'
 
 -----------------------------------------------------------------------------
 
 data Execution m c a b = Execution {
         execPool    :: [Executor m c a b]
       , execInputs  :: TVar (Seq a)
-      , execOutputs :: MVar [b]
+      , execOutputs :: TMVar [b]
       , execTerminate :: TVar Bool
       , execForked    :: TVar Bool
     }
 
 newExecution pool args = fromIO $ do ein  <- newTVarIO args
-                                     eout <- newEmptyMVar
+                                     eout <- atomically newEmptyTMVar
                                      term <- newTVarIO False
                                      fork <- newTVarIO False
                                      return $ Execution pool ein eout term fork
@@ -260,42 +234,37 @@ newExecution pool args = fromIO $ do ein  <- newTVarIO args
 
 data ExecutorInput a = EInput a
                      | ETerminate
-                     | EFinish
                      deriving (Eq, Ord, Show)
 
 data Executor m c a b = Executor {
         execTask   :: c -> a -> m b
-      , execInput  :: MVar (ExecutorInput a)
-      , execOutput :: MVar b
-      , execFinished   :: TVar Bool
+      , execInput  :: TMVar (ExecutorInput a)
+      , execOutput :: TMVar b
       , execContext      :: IORef (Maybe c)
       , execContextInit  :: m c
     }
 
-newExecutor f init = do ma <- newEmptyMVar
-                        mb <- newEmptyMVar
-                        w  <- newTVarIO True
+newExecutor f init = do ma <- newEmptyTMVarIO
+                        mb <- newEmptyTMVarIO
                         c  <- newIORef Nothing
-                        return $ Executor f ma mb w c init
+                        return $ Executor f ma mb c init
 
 -----------------------------------------------------------------------------
 
-writeInput = putMVar . execInput
-readOutput = tryTakeMVar . execOutput
-finished = readTVarIO . execFinished
+writeInput = putTMVar . execInput
+readOutput = tryTakeTMVar . execOutput
+waitsInput = isEmptyTMVar . execInput
 
-terminated :: (Eq a) => Executor m c a b -> IO Bool
-terminated = fmap (Just ETerminate ==) . tryReadMVar . execInput
+terminated :: (Eq a) => Executor m c a b -> STM Bool
+terminated = fmap (Just ETerminate ==) . tryReadTMVar . execInput
 
 -- | Execution loop.
 --   - EInput     -> exec, put result, read input (rec).
---   - EFinish    -> read input (rec).
 --   - ETerminate -> exit loop.
 --
 --  States:
---   - Working          -- input MVar is empty, finished flag not set.
---   - Finished (Ready) -- input MVar is empty, finished flag set.
---   - Terminated       -- input MVar is set to 'ETerminate' (finished flag also set).
+--   - Working          -- input TMVar is empty, finished flag not set.
+--   - Terminated       -- input TMVar is set to 'ETerminate' (finished flag also set).
 runExecutor :: (IOLike m) => Executor m c a b -> m ()
 runExecutor e = do -- Initialize if needed
                    ctx' <- fromIO . readIORef $ execContext e
@@ -304,17 +273,13 @@ runExecutor e = do -- Initialize if needed
                                                      fromIO $ writeIORef (execContext e) (Just c)
                                                      return c
                    -- Wait for the argument
-                   arg <- fromIO $ takeMVar $ execInput e
-
-                   let setFin ps = forM_ ps $ \(sel, b) -> fromIO (atomically (writeTVar (sel e) b))
+                   arg <- fromIO .atomically $ takeTMVar $ execInput e
 
                    -- Apply to @f@ or finish.
-                   case arg of EInput a -> setFin [(execFinished, False)]
-                                        >> execTask e ctx a >>= (fromIO . putMVar (execOutput e))
-                                        >> runExecutor e
-                               EFinish    -> setFin [(execFinished, True)] >> runExecutor e
-                               ETerminate -> setFin [(execFinished, True)] >>
-                                             fromIO (putMVar (execInput e) ETerminate)
+                   case arg of EInput a   -> execTask e ctx a
+                                          >>= (fromIO . atomically . putTMVar (execOutput e))
+                                          >> runExecutor e
+                               ETerminate -> fromIO (atomically $ putTMVar (execInput e) ETerminate)
 
 
 -----------------------------------------------------------------------------
