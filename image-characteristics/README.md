@@ -111,9 +111,12 @@ Optional:
 ##### Examples
 
 ```
-wick arff  ~/Pictures/wildfire fire1.arff --save-regions reports --tikz-confusion confusion.tikz.tex
+wick arff  ~/Pictures/wildfire fire1.arff --save-regions reports
 
-wick model fire1.arff fire1.model -x 4 --x-report report.log -o "-N 100 -L 0.9 -M 0.9"
+wick model fire1.arff fire1.model\
+     -x 4 --x-report report.log\
+     -o "-N 100 -L 0.9 -M 0.9"\
+     --tikz-confusion confusion.tikz.tex
 
 wick class fire1.model ~/Pictures/wildfire -G
 ```
